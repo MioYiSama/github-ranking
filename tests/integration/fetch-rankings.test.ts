@@ -51,6 +51,7 @@ describe("fetch ranking integration boundaries", () => {
       ],
       now: new Date("2026-05-16T00:00:00.000Z"),
       requestIntervalMs: 0,
+      log: () => undefined,
     });
 
     expect(fetchImpl).toHaveBeenCalledTimes(2);
@@ -84,6 +85,7 @@ describe("fetch ranking integration boundaries", () => {
       ],
       now: new Date("2026-05-16T00:00:00.000Z"),
       requestIntervalMs: 0,
+      log: () => undefined,
     });
 
     expect(fetchImpl).toHaveBeenCalledTimes(11);

@@ -1,7 +1,7 @@
 ---
 import RankingTable from "../../components/RankingTable.astro";
 import { getEnabledLanguages } from "../../config/languages";
-import snapshotData from "../../data/generated/rankings.json";
+import { snapshotData } from "../../data/snapshot";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { assertSupportedSnapshot, getLanguageRanking } from "../../lib/snapshot";
 import type { LanguageConfig, RankingSnapshot } from "../../lib/types";
@@ -37,4 +37,3 @@ const entries = ranking?.items ?? [];
     emptyMessage="This language has no usable entries in the latest successful snapshot. Try another language or return to the overall ranking."
   />
 </BaseLayout>
-

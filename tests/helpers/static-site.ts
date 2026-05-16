@@ -11,6 +11,7 @@ export function ensureBuiltSite() {
       env: {
         ...process.env,
         ASTRO_TELEMETRY_DISABLED: "1",
+        RANKING_SNAPSHOT_SOURCE: "fixture",
         SNAPSHOT_NOW: "2026-05-16T12:00:00.000Z",
       },
       stdio: "pipe",

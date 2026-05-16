@@ -54,22 +54,29 @@ jobs:
       - name: Install Playwright browser
         run: pnpm exec playwright install --with-deps chromium
 
-      - name: Fetch ranking data
-        run: pnpm data:fetch
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-
       - name: Run Vitest suite
         run: pnpm test
 
-      - name: Build static site
+      - name: Build static site for validation
         run: pnpm build:static
         env:
+          RANKING_SNAPSHOT_SOURCE: fixture
           PUBLIC_SITE: ${{ steps.pages.outputs.origin }}
           PUBLIC_BASE_PATH: ${{ steps.pages.outputs.base_path }}
 
       - name: Run Playwright visual tests
         run: pnpm test:visual
+
+      - name: Fetch live ranking data
+        run: pnpm data:fetch
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Build static site for deployment
+        run: pnpm build:static
+        env:
+          PUBLIC_SITE: ${{ steps.pages.outputs.origin }}
+          PUBLIC_BASE_PATH: ${{ steps.pages.outputs.base_path }}
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v5
