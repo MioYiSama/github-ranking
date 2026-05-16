@@ -1,0 +1,53 @@
+---
+import LanguageNav from "../components/LanguageNav.astro";
+import SnapshotStatus from "../components/SnapshotStatus.astro";
+import type { RankingSnapshot } from "../lib/types";
+import "../styles/global.css";
+
+interface Props {
+  title: string;
+  description: string;
+  currentSlug?: string;
+  snapshot: RankingSnapshot;
+}
+
+const { title, description, currentSlug, snapshot } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <title>{title}</title>
+  </head>
+  <body>
+    <div class="site-shell">
+      <header class="site-header">
+        <div class="site-header__inner">
+          <div class="brand-row">
+            <a class="brand" href="/" aria-label="GitHub repository star rankings overall page">
+              <img src="/favicon.svg" alt="" width="38" height="38" />
+              <span class="brand__text">
+                <span class="brand__name">GitHub Star Rankings</span>
+                <span class="brand__meta">Public repository snapshots</span>
+              </span>
+            </a>
+          </div>
+          <LanguageNav currentSlug={currentSlug} />
+        </div>
+      </header>
+      <main class="page-main">
+        <section class="page-title" aria-labelledby="page-title">
+          <h1 id="page-title">{title}</h1>
+          <p>{description}</p>
+        </section>
+        <SnapshotStatus snapshot={snapshot} />
+        <slot />
+      </main>
+    </div>
+  </body>
+</html>
+

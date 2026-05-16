@@ -98,6 +98,19 @@
 - **FR-006**: System MUST authenticate users via [NEEDS CLARIFICATION: auth method not specified - email/password, SSO, OAuth?]
 - **FR-007**: System MUST retain user data for [NEEDS CLARIFICATION: retention period not specified]
 
+### Dependency & Quality Constraints *(mandatory)*
+
+- **DQ-001**: New dependencies MUST be listed with purpose, alternatives
+  considered, approval rationale, and expected maintenance cost. Write "No new
+  dependencies" when the feature uses only existing project capabilities.
+- **DQ-002**: Code quality constraints MUST identify affected modules,
+  invariants to preserve, validation/error-handling expectations, and forbidden
+  shortcuts.
+- **DQ-003**: Testing expectations MUST specify automated coverage for each user
+  story's primary path, edge cases, failure modes, and integration boundaries.
+- **DQ-004**: Review expectations MUST identify reviewer focus areas and the
+  validation evidence required before merge.
+
 ### Key Entities *(include if feature involves data)*
 
 - **[Entity 1]**: [What it represents, key attributes without implementation]

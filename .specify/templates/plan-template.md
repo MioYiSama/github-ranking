@@ -40,7 +40,21 @@
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+- **Dependency Discipline**: List every new runtime, build, test, or tooling
+  dependency with purpose, alternatives considered, version/security notes, and
+  maintenance cost. Write "No new dependencies" if none.
+- **Code Quality**: Confirm the design follows existing project structure,
+  naming, validation, typing, and error-handling patterns. Document any broad
+  refactor, generated code, or new architectural layer with rationale.
+- **Test Completeness**: Identify unit, integration, contract, UI, or
+  end-to-end tests required for every changed behavior, including primary paths,
+  edge cases, failure modes, and integration boundaries.
+- **Code Review Readiness**: Define review focus areas, validation evidence to
+  attach, operational risks, rollback notes, and any manual verification that
+  cannot be automated.
+
+All gates MUST pass. Any exception MUST be documented in Complexity Tracking
+with owner, expiration, mitigation, and reviewer approval.
 
 ## Project Structure
 

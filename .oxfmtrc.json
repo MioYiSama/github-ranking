@@ -1,0 +1,11 @@
+{
+  "ignore": [
+    "dist/**",
+    "node_modules/**",
+    "coverage/**",
+    "playwright-report/**",
+    "test-results/**",
+    "tests/visual/**/*-snapshots/**",
+    "src/**/*.astro"
+  ]
+}

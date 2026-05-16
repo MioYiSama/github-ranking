@@ -1,0 +1,23 @@
+---
+import VirtualRankingTable from "../components/VirtualRankingTable.astro";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import snapshotData from "../data/generated/rankings.json";
+import { assertSupportedSnapshot } from "../lib/snapshot";
+import type { RankingSnapshot } from "../lib/types";
+
+const snapshot = snapshotData as RankingSnapshot;
+assertSupportedSnapshot(snapshot);
+---
+
+<BaseLayout
+  title="Overall Repository Ranking"
+  description="The most-starred eligible public GitHub repositories, ordered by stars from the latest successful snapshot."
+  snapshot={snapshot}
+>
+  <VirtualRankingTable
+    caption="Top public repositories overall"
+    entries={snapshot.overall}
+    emptyTitle="No overall ranking data"
+    emptyMessage="The latest successful snapshot did not contain usable overall repository entries."
+  />
+</BaseLayout>

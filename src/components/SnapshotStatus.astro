@@ -1,0 +1,20 @@
+---
+import { getSnapshotStatus } from "../lib/snapshot";
+import type { RankingSnapshot } from "../lib/types";
+
+interface Props {
+  snapshot: RankingSnapshot;
+}
+
+const { snapshot } = Astro.props;
+const status = getSnapshotStatus(snapshot);
+---
+
+<aside class="snapshot-status" data-state={status.state} aria-label="Ranking data freshness">
+  <div>
+    <strong>{status.label}</strong>
+    <span>{status.detail}</span>
+  </div>
+  <span class="muted">Stale after {new Intl.DateTimeFormat("en-US", { dateStyle: "medium", timeStyle: "short", timeZone: "UTC" }).format(status.staleAfter)} UTC</span>
+</aside>
+

@@ -1,0 +1,42 @@
+---
+import RepositoryRow from "./RepositoryRow.astro";
+import type { RepositoryRankingEntry } from "../lib/types";
+
+interface Props {
+  caption: string;
+  entries: RepositoryRankingEntry[];
+  emptyTitle: string;
+  emptyMessage: string;
+}
+
+const { caption, entries, emptyTitle, emptyMessage } = Astro.props;
+---
+
+{
+  entries.length > 0 ? (
+    <div class="ranking-table-wrap">
+      <table class="ranking-table">
+        <caption>{caption}</caption>
+        <thead>
+          <tr>
+            <th scope="col">Rank</th>
+            <th scope="col">Repository</th>
+            <th scope="col">Stars</th>
+            <th scope="col">Language</th>
+          </tr>
+        </thead>
+        <tbody>
+          {entries.map((entry) => (
+            <RepositoryRow entry={entry} />
+          ))}
+        </tbody>
+      </table>
+    </div>
+  ) : (
+    <section class="empty-state" aria-live="polite">
+      <h2>{emptyTitle}</h2>
+      <p>{emptyMessage}</p>
+    </section>
+  )
+}
+

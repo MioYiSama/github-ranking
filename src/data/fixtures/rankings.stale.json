@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "1.0.0",
+  "generatedAt": "2026-05-14T00:00:00.000Z",
+  "staleAfter": "2026-05-15T12:00:00.000Z",
+  "source": {
+    "api": "github-rest-search",
+    "apiVersion": "2026-03-10",
+    "workflowRunId": "stale-fixture",
+    "requestCount": 4,
+    "rateLimitRemaining": 0
+  },
+  "overall": [],
+  "languages": [
+    {
+      "language": "Python",
+      "slug": "python",
+      "displayName": "Python",
+      "totalCount": 0,
+      "incompleteResults": false,
+      "query": "stars:>=1 fork:false archived:false mirror:false is:public language:Python",
+      "generatedAt": "2026-05-14T00:00:00.000Z",
+      "items": []
+    }
+  ],
+  "errors": ["Latest refresh failed; serving last successful snapshot."]
+}

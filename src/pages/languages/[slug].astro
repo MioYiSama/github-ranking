@@ -1,0 +1,40 @@
+---
+import RankingTable from "../../components/RankingTable.astro";
+import { getEnabledLanguages } from "../../config/languages";
+import snapshotData from "../../data/generated/rankings.json";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { assertSupportedSnapshot, getLanguageRanking } from "../../lib/snapshot";
+import type { LanguageConfig, RankingSnapshot } from "../../lib/types";
+
+interface Props {
+  language: LanguageConfig;
+}
+
+export function getStaticPaths() {
+  return getEnabledLanguages().map((language) => ({
+    params: { slug: language.slug },
+    props: { language },
+  }));
+}
+
+const { language } = Astro.props;
+const snapshot = snapshotData as RankingSnapshot;
+assertSupportedSnapshot(snapshot);
+const ranking = getLanguageRanking(snapshot, language.slug);
+const entries = ranking?.items ?? [];
+---
+
+<BaseLayout
+  title={`${language.displayName} Repository Ranking`}
+  description={`The most-starred eligible public GitHub repositories whose primary language is ${language.displayName}.`}
+  currentSlug={language.slug}
+  snapshot={snapshot}
+>
+  <RankingTable
+    caption={`Top ${language.displayName} repositories`}
+    entries={entries}
+    emptyTitle={`No ${language.displayName} ranking entries`}
+    emptyMessage="This language has no usable entries in the latest successful snapshot. Try another language or return to the overall ranking."
+  />
+</BaseLayout>
+

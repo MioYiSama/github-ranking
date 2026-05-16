@@ -1,0 +1,23 @@
+---
+import type { RepositoryRankingEntry } from "../lib/types";
+
+interface Props {
+  entry: RepositoryRankingEntry;
+}
+
+const { entry } = Astro.props;
+const stars = new Intl.NumberFormat("en-US").format(entry.stars);
+const language = entry.primaryLanguage ?? "Unknown";
+const description = entry.description ?? "No description available.";
+---
+
+<tr>
+  <td class="rank-cell">#{entry.rank}</td>
+  <td class="repo-cell">
+    <a class="repo-link" href={entry.htmlUrl} rel="noreferrer" target="_blank">{entry.fullName}</a>
+    <p class="repo-description">{description}</p>
+  </td>
+  <td class="star-cell" aria-label={`${stars} stars`}>{stars}</td>
+  <td><span class="language-pill">{language}</span></td>
+</tr>
+

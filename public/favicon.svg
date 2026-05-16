@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="GitHub ranking star">
+  <rect width="64" height="64" rx="14" fill="#0f766e"/>
+  <path fill="#fff7ed" d="m32 9 6.7 14.2 15.3 2.3-11 11 2.6 15.5L32 44.7 18.4 52l2.6-15.5-11-11 15.3-2.3L32 9Z"/>
+  <path fill="#172033" opacity=".25" d="m32 15 4.9 10.3 11 1.7-8 8 1.9 11.2L32 41l-9.8 5.2L24 35l-8-8 11-1.7L32 15Z"/>
+</svg>
+

@@ -1,0 +1,22 @@
+---
+import { getEnabledLanguages } from "../config/languages";
+
+interface Props {
+  currentSlug?: string;
+}
+
+const { currentSlug } = Astro.props;
+const languages = getEnabledLanguages();
+---
+
+<nav class="language-nav" aria-label="Repository ranking languages">
+  <a href="/" aria-current={currentSlug ? undefined : "page"}>Overall</a>
+  {
+    languages.map((language) => (
+      <a href={`/languages/${language.slug}/`} aria-current={currentSlug === language.slug ? "page" : undefined}>
+        {language.displayName}
+      </a>
+    ))
+  }
+</nav>
+

@@ -1,0 +1,199 @@
+---
+import type { RepositoryRankingEntry } from "../lib/types";
+
+interface Props {
+  caption: string;
+  entries: RepositoryRankingEntry[];
+  emptyTitle: string;
+  emptyMessage: string;
+}
+
+const { caption, entries, emptyTitle, emptyMessage } = Astro.props;
+const dataId = `virtual-ranking-${crypto.randomUUID()}`;
+---
+
+{
+  entries.length > 0 ? (
+    <section
+      class="virtual-ranking"
+      data-virtual-ranking
+      data-virtual-data-id={dataId}
+      aria-labelledby={`${dataId}-caption`}
+    >
+      <div class="virtual-ranking__title" id={`${dataId}-caption`}>
+        <span>{caption}</span>
+        <span class="muted">{entries.length.toLocaleString("en-US")} repositories</span>
+      </div>
+      <div class="virtual-ranking__table" role="table" aria-rowcount={entries.length + 1}>
+        <div class="virtual-ranking__header" role="row">
+          <span role="columnheader">Rank</span>
+          <span role="columnheader">Repository</span>
+          <span role="columnheader">Stars</span>
+          <span role="columnheader">Language</span>
+        </div>
+        <div
+          class="virtual-ranking__viewport"
+          data-virtual-viewport
+          role="rowgroup"
+          tabindex="0"
+          aria-label={`${caption} scrollable list`}
+        >
+          <div class="virtual-ranking__spacer" data-virtual-spacer>
+            <div class="virtual-ranking__rows" data-virtual-rows />
+          </div>
+        </div>
+      </div>
+      <script is:inline id={dataId} type="application/json" set:html={JSON.stringify(entries)} />
+    </section>
+  ) : (
+    <section class="empty-state" aria-live="polite">
+      <h2>{emptyTitle}</h2>
+      <p>{emptyMessage}</p>
+    </section>
+  )
+}
+
+<script>
+  import {
+    Virtualizer,
+    elementScroll,
+    observeElementOffset,
+  } from "@tanstack/virtual-core";
+
+  interface Entry {
+    rank: number;
+    id: number;
+    fullName: string;
+    htmlUrl: string;
+    description: string | null;
+    stars: number;
+    primaryLanguage: string | null;
+  }
+
+  const starFormatter = new Intl.NumberFormat("en-US");
+
+  function createCell(text: string, className?: string) {
+    const cell = document.createElement("span");
+    cell.setAttribute("role", "cell");
+    cell.textContent = text;
+
+    if (className) {
+      cell.className = className;
+    }
+
+    return cell;
+  }
+
+  function createRepositoryCell(entry: Entry) {
+    const cell = document.createElement("span");
+    cell.setAttribute("role", "cell");
+    cell.className = "repo-cell";
+
+    const link = document.createElement("a");
+    link.className = "repo-link";
+    link.href = entry.htmlUrl;
+    link.rel = "noreferrer";
+    link.target = "_blank";
+    link.textContent = entry.fullName;
+
+    const description = document.createElement("span");
+    description.className = "repo-description";
+    description.textContent = entry.description ?? "No description available.";
+
+    cell.append(link, description);
+    return cell;
+  }
+
+  function renderVirtualRanking(root: HTMLElement) {
+    const dataId = root.dataset.virtualDataId;
+    const dataScript = dataId ? document.getElementById(dataId) : null;
+    const viewport = root.querySelector<HTMLElement>("[data-virtual-viewport]");
+    const spacer = root.querySelector<HTMLElement>("[data-virtual-spacer]");
+    const rows = root.querySelector<HTMLElement>("[data-virtual-rows]");
+
+    if (!dataScript?.textContent || !viewport || !spacer || !rows) {
+      return;
+    }
+
+    const entries = JSON.parse(dataScript.textContent) as Entry[];
+    const viewportElement = viewport;
+    const spacerElement = spacer;
+    const rowsElement = rows;
+    viewportElement.style.height = "720px";
+    viewportElement.style.maxHeight = "72vh";
+    viewportElement.style.minHeight = "440px";
+
+    function observeViewportRect(_instance: Virtualizer<HTMLElement, HTMLElement>, callback: (rect: { width: number; height: number }) => void) {
+      const update = () => {
+        const viewportHeight = Math.max(
+          440,
+          Math.min(viewportElement.clientHeight || 720, Math.round(window.innerHeight * 0.72), 720),
+        );
+        callback({ width: viewportElement.clientWidth, height: viewportHeight });
+      };
+      const observer = new ResizeObserver(update);
+
+      update();
+      observer.observe(viewportElement);
+      window.addEventListener("resize", update);
+
+      return () => {
+        observer.disconnect();
+        window.removeEventListener("resize", update);
+      };
+    }
+
+    const virtualizer = new Virtualizer<HTMLElement, HTMLElement>({
+      count: entries.length,
+      getScrollElement: () => viewportElement,
+      estimateSize: () => 86,
+      overscan: 12,
+      getItemKey: (index) => entries[index]?.id ?? index,
+      scrollToFn: elementScroll,
+      observeElementRect: observeViewportRect,
+      observeElementOffset,
+      onChange: () => render(),
+    });
+
+    function render() {
+      virtualizer._willUpdate();
+      const virtualItems = virtualizer.getVirtualItems();
+      spacerElement.style.height = `${virtualizer.getTotalSize()}px`;
+      rowsElement.replaceChildren(
+        ...virtualItems.map((virtualItem) => {
+          const entry = entries[virtualItem.index];
+          const row = document.createElement("div");
+
+          if (!entry) {
+            return row;
+          }
+
+          row.className = "virtual-ranking__row";
+          row.setAttribute("role", "row");
+          row.setAttribute("aria-rowindex", String(entry.rank + 1));
+          row.setAttribute("data-index", String(virtualItem.index));
+          row.style.transform = `translateY(${virtualItem.start}px)`;
+
+          const language = document.createElement("span");
+          language.setAttribute("role", "cell");
+          language.className = "language-pill";
+          language.textContent = entry.primaryLanguage ?? "Unknown";
+
+          row.append(
+            createCell(`#${entry.rank}`, "rank-cell"),
+            createRepositoryCell(entry),
+            createCell(starFormatter.format(entry.stars), "star-cell"),
+            language,
+          );
+          return row;
+        }),
+      );
+    }
+
+    const cleanup = virtualizer._didMount();
+    render();
+    window.addEventListener("beforeunload", cleanup, { once: true });
+  }
+
+  document.querySelectorAll<HTMLElement>("[data-virtual-ranking]").forEach(renderVirtualRanking);
+</script>

@@ -1,0 +1,12 @@
+* {
+  caret-color: transparent !important;
+}
+
+html {
+  scroll-behavior: auto !important;
+}
+
+body {
+  animation-duration: 0s !important;
+  transition-duration: 0s !important;
+}

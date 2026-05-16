@@ -1,0 +1,201 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/github-ranking/data-snapshot.schema.json",
+  "title": "GitHub Ranking Snapshot",
+  "type": "object",
+  "required": ["schemaVersion", "generatedAt", "staleAfter", "source", "overall", "languages"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "staleAfter": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "source": {
+      "type": "object",
+      "required": ["api", "apiVersion", "requestCount"],
+      "additionalProperties": false,
+      "properties": {
+        "api": {
+          "type": "string",
+          "const": "github-rest-search"
+        },
+        "apiVersion": {
+          "type": "string"
+        },
+        "workflowRunId": {
+          "type": ["string", "null"]
+        },
+        "requestCount": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "rateLimitRemaining": {
+          "type": ["integer", "null"],
+          "minimum": 0
+        }
+      }
+    },
+    "overall": {
+      "type": "array",
+      "maxItems": 1000,
+      "items": {
+        "$ref": "#/$defs/repositoryRankingEntry"
+      }
+    },
+    "languages": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/languageRanking"
+      }
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    }
+  },
+  "$defs": {
+    "languageRanking": {
+      "type": "object",
+      "required": [
+        "language",
+        "slug",
+        "displayName",
+        "totalCount",
+        "incompleteResults",
+        "query",
+        "generatedAt",
+        "items"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "language": {
+          "type": "string",
+          "minLength": 1
+        },
+        "slug": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "displayName": {
+          "type": "string",
+          "minLength": 1
+        },
+        "totalCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "incompleteResults": {
+          "type": "boolean"
+        },
+        "query": {
+          "type": "string",
+          "minLength": 1
+        },
+        "generatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "items": {
+          "type": "array",
+          "maxItems": 1000,
+          "items": {
+            "$ref": "#/$defs/repositoryRankingEntry"
+          }
+        }
+      }
+    },
+    "repositoryRankingEntry": {
+      "type": "object",
+      "required": [
+        "rank",
+        "id",
+        "nodeId",
+        "owner",
+        "name",
+        "fullName",
+        "htmlUrl",
+        "description",
+        "stars",
+        "primaryLanguage",
+        "fork",
+        "archived",
+        "mirror",
+        "snapshotAt"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "rank": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000
+        },
+        "id": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "nodeId": {
+          "type": ["string", "null"]
+        },
+        "owner": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "fullName": {
+          "type": "string",
+          "pattern": "^[^/]+/[^/]+$"
+        },
+        "htmlUrl": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https://github\\.com/"
+        },
+        "description": {
+          "type": ["string", "null"]
+        },
+        "stars": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "primaryLanguage": {
+          "type": ["string", "null"]
+        },
+        "fork": {
+          "type": "boolean"
+        },
+        "archived": {
+          "type": "boolean"
+        },
+        "mirror": {
+          "type": ["boolean", "null"]
+        },
+        "pushedAt": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "snapshotAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    }
+  }
+}
