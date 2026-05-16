@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- Node.js 22.12+
+- Node.js 26+
 - pnpm
 - Astro 7 prerelease (`astro@beta` if available; otherwise exact `astro@alpha` until beta exists)
 - Vite 8

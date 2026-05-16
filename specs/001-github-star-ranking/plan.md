@@ -12,7 +12,7 @@ Build a public, read-only static ranking site that shows the top GitHub reposito
 
 ## Technical Context
 
-**Language/Version**: Astro 7 prerelease channel (`astro@beta` if available; otherwise `astro@alpha` pinned exactly until beta exists) with TypeScript 6, TypeScript-flavored Astro frontmatter, and Node.js ESM data scripts on Node.js 22.12+.
+**Language/Version**: Astro 7 prerelease channel (`astro@beta` if available; otherwise `astro@alpha` pinned exactly until beta exists) with TypeScript 6, TypeScript-flavored Astro frontmatter, and Node.js ESM data scripts on Node.js 26+.
 
 **Primary Dependencies**: `astro@beta` or exact `astro@alpha` prerelease for Astro 7, `vite@^8`, `typescript@^6`, `@types/node`, `tailwindcss@^4`, `@tailwindcss/vite@^4`, `vitest`, `@playwright/test`, `ajv`, `oxlint`, `oxfmt`, and `@astrojs/check`. Workflow dependencies use official actions: `actions/checkout`, `actions/setup-node`, `actions/configure-pages`, `actions/upload-pages-artifact`, `actions/deploy-pages`, and `pnpm/action-setup` unless Corepack is used instead. `withastro/action` is allowed if it proves compatible with Astro 7 prerelease/Vite 8 and does not obscure the data-fetch/build/test/deploy gates. GitHub REST API calls use Node's native `fetch`; no GitHub API SDK is planned.
 

@@ -19,7 +19,7 @@
 **Purpose**: Initialize the Astro 7 prerelease/Vite 8/TypeScript 6 project, tooling, and empty file structure.
 
 - [x] T001 Create `package.json` with pnpm scripts and approved dependencies in `/Users/mioyi/Documents/Code/Web/github-ranking/package.json`
-- [x] T002 Create Node runtime pin for Node.js 22.12+ in `/Users/mioyi/Documents/Code/Web/github-ranking/.node-version`
+- [x] T002 Create Node runtime pin for Node.js 26+ in `/Users/mioyi/Documents/Code/Web/github-ranking/.node-version`
 - [x] T003 Create Astro 7 prerelease static build configuration with Tailwind Vite plugin and GitHub Pages placeholders in `/Users/mioyi/Documents/Code/Web/github-ranking/astro.config.mjs`
 - [x] T004 Create TypeScript 6 compiler configuration with explicit Node/browser types and bundler module resolution in `/Users/mioyi/Documents/Code/Web/github-ranking/tsconfig.json`
 - [x] T005 [P] Create Vitest configuration for unit, integration, and contract tests in `/Users/mioyi/Documents/Code/Web/github-ranking/vitest.config.ts`

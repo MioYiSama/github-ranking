@@ -15,7 +15,7 @@ Static GitHub repository star rankings with an overall top list, language-specif
 
 Prerequisites:
 
-- Node.js 22.12+
+- Node.js 26+
 - pnpm 11+
 
 Install dependencies:
