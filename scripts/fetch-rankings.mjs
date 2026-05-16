@@ -13,7 +13,7 @@ export const DEFAULT_OVERALL_PAGE_COUNT = 10;
 export const DEFAULT_LANGUAGE_PAGE_COUNT = 1;
 export const DEFAULT_SEARCH_REQUEST_INTERVAL_MS = 8_000;
 export const DEFAULT_SEARCH_MAX_RETRIES = 2;
-export const DEFAULT_SECONDARY_RATE_LIMIT_RETRY_MS = 180_000;
+export const DEFAULT_SECONDARY_RATE_LIMIT_RETRY_MS = 65_000;
 
 export const DEFAULT_LANGUAGES = [
   { language: "JavaScript", slug: "javascript", displayName: "JavaScript", enabled: true },
@@ -159,6 +159,19 @@ function errorDetail(errorMessage) {
   return errorMessage ? `: ${errorMessage}` : "";
 }
 
+function rateLimitContext(response) {
+  const limit = numericHeader(response.headers, "x-ratelimit-limit");
+  const remaining = numericHeader(response.headers, "x-ratelimit-remaining");
+  const resource = getHeader(response.headers, "x-ratelimit-resource");
+  const parts = [
+    resource ? `resource=${resource}` : null,
+    limit !== null ? `limit=${limit}` : null,
+    remaining !== null ? `remaining=${remaining}` : null,
+  ].filter(Boolean);
+
+  return parts.length ? ` (${parts.join(", ")})` : "";
+}
+
 function numericEnv(name, fallback) {
   const rawValue = process.env[name];
 
@@ -281,7 +294,7 @@ export async function fetchSearchRanking(options = {}) {
 
       if (retryDelayMs !== null && attempt < maxRetries) {
         log(
-          `GitHub Search throttled ${label}; waiting ${Math.ceil(retryDelayMs / 1000)}s before retry ${attempt + 2}/${maxRetries + 1}${errorDetail(errorMessage)}`,
+          `GitHub Search throttled ${label}; waiting ${Math.ceil(retryDelayMs / 1000)}s before retry ${attempt + 2}/${maxRetries + 1}${rateLimitContext(response)}${errorDetail(errorMessage)}`,
         );
         await sleep(retryDelayMs);
         continue;
@@ -373,6 +386,10 @@ export async function buildSnapshot({
   const rateLimitState = { lastRequestAt: 0 };
   let requestCount = 0;
   let rateLimitRemaining = null;
+
+  log(
+    `GitHub Search fetch starting with ${token ? "authenticated" : "anonymous"} requests; overallPages=${overallPageCount}, languagePages=${languagePageCount}, intervalMs=${requestIntervalMs}, maxRetries=${maxRetries}`,
+  );
 
   const overall = await fetchSearchRanking({
     token,
