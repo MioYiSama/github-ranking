@@ -57,7 +57,7 @@
 
 ## Decision: Use GitHub REST Search API with native `fetch`
 
-**Rationale**: The user requested GitHub REST API. Repository rankings can be fetched with `GET /search/repositories`, `sort=stars`, `order=desc`, `per_page=100`, pages `1..10`, and query qualifiers such as `language:LANGUAGE`, `fork:false`, `archived:false`, `mirror:false`, and `is:public`. Native `fetch` in Node avoids a GitHub SDK dependency and keeps request handling explicit.
+**Rationale**: The user requested GitHub REST API. Repository rankings can be fetched with `GET /search/repositories`, `sort=stars`, `order=desc`, `per_page=100`, pages `1..10` for the overall ranking, and bounded language pages with query qualifiers such as `language:LANGUAGE`, `fork:false`, `archived:false`, `mirror:false`, and `is:public`. Native `fetch` in Node avoids a GitHub SDK dependency and keeps request handling explicit.
 
 **Alternatives considered**:
 
@@ -66,7 +66,7 @@
 
 ## Decision: Authenticate scheduled fetches with `GITHUB_TOKEN`
 
-**Rationale**: The scheduled workflow can use GitHub Actions' built-in token for authenticated requests without storing a personal token. Search endpoints have a custom rate limit; authenticated Search requests are sufficient for one daily top-1000 overall request plus a curated set of language requests when requests are kept sequential and bounded. The primary `GITHUB_TOKEN` limit is also adequate for this workload.
+**Rationale**: The scheduled workflow can use GitHub Actions' built-in token for authenticated requests without storing a personal token. Search endpoints have a custom rate limit and secondary-limit behavior for expensive queries; authenticated Search requests are sufficient for one daily top-1000 overall request plus a curated set of shallow language requests when requests are kept sequential, throttled, and bounded. The primary `GITHUB_TOKEN` limit is also adequate for this workload.
 
 **Alternatives considered**:
 

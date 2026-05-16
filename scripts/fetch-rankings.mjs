@@ -9,9 +9,11 @@ export const DEFAULT_OUTPUT = "src/data/generated/rankings.json";
 export const STALE_AFTER_HOURS = 36;
 export const RANKING_LIMIT = 1000;
 export const SEARCH_PAGE_SIZE = 100;
-export const DEFAULT_SEARCH_REQUEST_INTERVAL_MS = 2_200;
-export const DEFAULT_SEARCH_MAX_RETRIES = 3;
-export const DEFAULT_SECONDARY_RATE_LIMIT_RETRY_MS = 60_000;
+export const DEFAULT_OVERALL_PAGE_COUNT = 10;
+export const DEFAULT_LANGUAGE_PAGE_COUNT = 1;
+export const DEFAULT_SEARCH_REQUEST_INTERVAL_MS = 8_000;
+export const DEFAULT_SEARCH_MAX_RETRIES = 2;
+export const DEFAULT_SECONDARY_RATE_LIMIT_RETRY_MS = 180_000;
 
 export const DEFAULT_LANGUAGES = [
   { language: "JavaScript", slug: "javascript", displayName: "JavaScript", enabled: true },
@@ -157,6 +159,17 @@ function errorDetail(errorMessage) {
   return errorMessage ? `: ${errorMessage}` : "";
 }
 
+function numericEnv(name, fallback) {
+  const rawValue = process.env[name];
+
+  if (!rawValue) {
+    return fallback;
+  }
+
+  const value = Number(rawValue);
+  return Number.isFinite(value) && value >= 0 ? value : fallback;
+}
+
 function compareEntries(left, right) {
   if (right.stars !== left.stars) {
     return right.stars - left.stars;
@@ -220,7 +233,8 @@ function normalizeItems(items, { language, snapshotAt }) {
 
 export async function fetchSearchRanking(options = {}) {
   const { language, slug, displayName, token, fetchImpl = fetch, snapshotAt } = options;
-  const pageCount = options.pageCount ?? 10;
+  const pageCount =
+    options.pageCount ?? (language ? DEFAULT_LANGUAGE_PAGE_COUNT : DEFAULT_OVERALL_PAGE_COUNT);
   const sleep = options.sleep ?? sleepFor;
   const maxRetries = options.maxRetries ?? DEFAULT_SEARCH_MAX_RETRIES;
   const requestIntervalMs = options.requestIntervalMs ?? DEFAULT_SEARCH_REQUEST_INTERVAL_MS;
@@ -343,9 +357,14 @@ export async function buildSnapshot({
   languages = DEFAULT_LANGUAGES,
   now = new Date(),
   sleep = sleepFor,
-  maxRetries = DEFAULT_SEARCH_MAX_RETRIES,
-  requestIntervalMs = DEFAULT_SEARCH_REQUEST_INTERVAL_MS,
-  secondaryRateLimitRetryMs = DEFAULT_SECONDARY_RATE_LIMIT_RETRY_MS,
+  maxRetries = numericEnv("GITHUB_SEARCH_MAX_RETRIES", DEFAULT_SEARCH_MAX_RETRIES),
+  requestIntervalMs = numericEnv("GITHUB_SEARCH_INTERVAL_MS", DEFAULT_SEARCH_REQUEST_INTERVAL_MS),
+  secondaryRateLimitRetryMs = numericEnv(
+    "GITHUB_SEARCH_SECONDARY_RETRY_MS",
+    DEFAULT_SECONDARY_RATE_LIMIT_RETRY_MS,
+  ),
+  overallPageCount = numericEnv("GITHUB_RANKING_OVERALL_PAGES", DEFAULT_OVERALL_PAGE_COUNT),
+  languagePageCount = numericEnv("GITHUB_RANKING_LANGUAGE_PAGES", DEFAULT_LANGUAGE_PAGE_COUNT),
   log = console.warn,
 } = {}) {
   const generatedAt = now.toISOString();
@@ -359,6 +378,7 @@ export async function buildSnapshot({
     token,
     fetchImpl,
     snapshotAt: generatedAt,
+    pageCount: overallPageCount,
     sleep,
     maxRetries,
     requestIntervalMs,
@@ -383,6 +403,7 @@ export async function buildSnapshot({
       token,
       fetchImpl,
       snapshotAt: generatedAt,
+      pageCount: languagePageCount,
       sleep,
       maxRetries,
       requestIntervalMs,

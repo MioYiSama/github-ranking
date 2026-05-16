@@ -28,7 +28,7 @@ Build a public, read-only static ranking site that shows the top GitHub reposito
 
 **Constraints**: No server runtime, no visitor authentication, no client-side GitHub API token, no hard-coded secrets, daily refresh under normal conditions, stale data marked after 36 hours, Search API result and rate limits respected, GitHub Pages source configured for GitHub Actions. Astro 7 is prerelease and Vite 8 uses Rolldown, so implementation must pin exact prerelease versions, document upgrade notes, and keep rollback notes to the latest Astro 6/Vite 7 plan if prerelease blockers appear. Playwright screenshots must be generated and compared on the same Linux CI environment to reduce font/rendering noise. `oxfmt` does not currently provide full Astro file formatting, so formatter coverage is limited to supported JS/TS/JSON/MD/CSS-style files while `.astro` quality is enforced through Astro checks, build, visual tests, review, and focused component conventions.
 
-**Scale/Scope**: Top 1000 repositories overall and top 1000 for each configured language ranking, matching GitHub Search's maximum accessible result window. Initial language set is a curated, configurable list sized to stay within GitHub Search API limits for one daily run.
+**Scale/Scope**: Top 1000 repositories overall and top 100 for each configured language ranking by default, with language rankings configurable up to top 1000 when GitHub Search limits allow. Initial language set is a curated, configurable list sized to stay within GitHub Search API limits for one daily run.
 
 ## Constitution Check
 

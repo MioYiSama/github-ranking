@@ -26,7 +26,13 @@ pnpm exec playwright install --with-deps chromium
 GITHUB_TOKEN=... pnpm data:fetch
 ```
 
-The live fetch is intentionally throttled to stay under GitHub Search API limits while collecting 1000-entry rankings. If no token is provided, local fetch may hit lower limits. Tests should rely on fixtures instead of live API calls.
+The live fetch is intentionally throttled to stay under GitHub Search API limits while collecting 1000 overall entries and one page per language by default. If no token is provided, local fetch may hit lower limits. Tests should rely on fixtures instead of live API calls.
+
+Optional fetch controls:
+
+- `GITHUB_RANKING_LANGUAGE_PAGES=10` collects up to 1000 entries per language, but is much more likely to hit GitHub Search secondary limits.
+- `GITHUB_SEARCH_INTERVAL_MS=12000` slows requests further for stricter CI behavior.
+- `GITHUB_SEARCH_SECONDARY_RETRY_MS=300000` waits longer after secondary rate-limit responses.
 
 ## Development
 

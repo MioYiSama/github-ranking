@@ -37,7 +37,7 @@ Define the build-time integration contract for fetching repository rankings from
   - `sort=stars`
   - `order=desc`
   - `per_page=100`
-  - `page=1..10`
+  - `page=1` by default, configurable up to `page=1..10`
 
 ## Required Response Handling
 
@@ -53,7 +53,7 @@ Define the build-time integration contract for fetching repository rankings from
 - Requests are sequential or low-concurrency.
 - Implementation must observe `x-ratelimit-*` and `retry-after` headers when present.
 - Implementation must avoid retry loops that can worsen primary or secondary rate limiting.
-- Daily default language set must keep the number of Search requests below the authenticated Search limit.
+- Daily default language set must keep the number of Search requests comfortably below the authenticated Search limit and reduce secondary-limit risk.
 
 ## Schedule
 

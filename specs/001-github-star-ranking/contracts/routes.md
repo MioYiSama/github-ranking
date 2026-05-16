@@ -30,7 +30,7 @@ Language-specific repository ranking.
 - Stale-data indicator when applicable.
 - Link back to the overall ranking.
 - Linkable navigation to other configured language rankings.
-- Ranking table with up to 1000 entries for the selected language.
+- Ranking table with the fetched entries for the selected language, defaulting to up to 100 entries and configurable up to 1000 entries.
 - Empty state if the language has no available entries.
 
 ### Unknown Language Route

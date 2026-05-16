@@ -59,6 +59,39 @@ describe("fetch ranking integration boundaries", () => {
     expect(snapshot.source.requestCount).toBe(2);
   });
 
+  it("keeps language fetches shallow by default while collecting 1000 overall entries", async () => {
+    const pageItems = (page: number) =>
+      Array.from({ length: 100 }, (_, index) => ({
+        ...githubItem,
+        id: page * 1000 + index,
+        name: `repo-${page}-${index}`,
+        full_name: `owner/repo-${page}-${index}`,
+      }));
+    const fetchImpl = vi.fn(async (url: URL) => {
+      const page = Number(url.searchParams.get("page") ?? "1");
+
+      return response({
+        total_count: 1000,
+        incomplete_results: false,
+        items: pageItems(page),
+      });
+    }) as unknown as typeof fetch;
+
+    const snapshot = await buildSnapshot({
+      fetchImpl,
+      languages: [
+        { language: "JavaScript", slug: "javascript", displayName: "JavaScript", enabled: true },
+      ],
+      now: new Date("2026-05-16T00:00:00.000Z"),
+      requestIntervalMs: 0,
+    });
+
+    expect(fetchImpl).toHaveBeenCalledTimes(11);
+    expect(snapshot.overall).toHaveLength(1000);
+    expect(snapshot.languages[0]?.items).toHaveLength(100);
+    expect(snapshot.source.requestCount).toBe(11);
+  });
+
   it("treats fatal response failures as fetch errors", async () => {
     await expect(
       fetchSearchRanking({

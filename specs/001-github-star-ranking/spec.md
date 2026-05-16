@@ -84,7 +84,7 @@ As a returning visitor, I want to know when the ranking data was last refreshed,
 - **FR-011**: Rankings MUST use stable tie-breaking when repositories have equal star counts: sort by star count descending, then repository full name in ascending alphabetical order.
 - **FR-012**: The site MUST provide clear empty states for unavailable rankings, missing language data, and missing optional repository metadata. Empty ranking states MUST identify which ranking has no entries, preserve navigation to other rankings, and continue to show freshness status when snapshot metadata exists.
 - **FR-013**: The browsing experience MUST be public and read-only, with no visitor account, sign-in, comments, voting, moderation, administrative editing, or repository submission workflow required.
-- **FR-014**: The MVP MUST display up to the top 1000 repositories overall and up to the top 1000 repositories for each available language ranking. If fewer than 1000 eligible entries are available for a ranking, the site MUST display all available eligible entries.
+- **FR-014**: The MVP MUST display up to the top 1000 repositories overall. Language rankings MUST display the fetched eligible entries for each available language, defaulting to the top 100 entries per language to stay within GitHub Search limits, with a reviewed fetch configuration path to collect up to 1000 entries per language. If fewer eligible entries are available for a ranking than the configured fetch size, the site MUST display all available eligible entries.
 - **FR-015**: The site MUST be fully statically generated, with no server runtime, no visitor authentication, and no browser-side calls to the GitHub API. Daily refreshed data MUST be produced before static artifact publication, not by visitor browsers.
 - **FR-016**: Displayed star counts MUST be snapshot values captured from GitHub during the last successful refresh. They are not guaranteed to match live GitHub counts until the next successful snapshot.
 - **FR-017**: A deployment workflow MUST NOT publish a broken first deployment when no valid ranking snapshot exists. If the first data refresh produces no usable snapshot, publication MUST fail before deployment or produce a clearly unavailable static artifact only when that behavior is intentionally validated.
@@ -126,14 +126,14 @@ As a returning visitor, I want to know when the ranking data was last refreshed,
 - **SC-005**: 100% of ranking views show a non-broken fallback experience when the latest refresh fails but a prior successful snapshot exists.
 - **SC-006**: At least 95% of displayed repository entries include rank, repository full name, star count, repository link, and primary language when known.
 - **SC-007**: 100% of generated language ranking URLs can be loaded directly or reloaded without requiring prior navigation state.
-- **SC-008**: 100% of ranking views with fewer than 1000 eligible entries display all eligible entries and do not imply that hidden entries exist.
+- **SC-008**: 100% of ranking views with fewer eligible entries than the configured fetch size display all eligible entries and do not imply that hidden entries exist.
 
 ## Assumptions
 
 - Target users are public visitors who want to discover, compare, or monitor popular GitHub repositories.
 - "按语言排行" means ranking by a repository's primary language.
 - The first release covers top repository lists, not the full GitHub repository catalog.
-- The MVP target is top 1000 repositories overall and top 1000 repositories per available language ranking.
+- The MVP target is top 1000 repositories overall and top 100 repositories per available language ranking by default, with language rankings configurable up to top 1000 when API limits allow.
 - GitHub REST Search is the ranking data source for the MVP. Its public repository availability, search result completeness, rate limits, and reported metadata constrain what can be shown in each snapshot.
 - The curated language list is chosen for visitor value and API-limit predictability; it can expand through reviewed configuration changes.
 - Rankings are point-in-time snapshots, primarily sorted by star count descending; ties are resolved by repository full name in ascending alphabetical order.
