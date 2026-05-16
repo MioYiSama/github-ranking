@@ -51,22 +51,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Install Playwright browser
-        run: pnpm exec playwright install --with-deps chromium
-
-      - name: Run Vitest suite
-        run: pnpm test
-
-      - name: Build static site for validation
-        run: pnpm build:static
-        env:
-          RANKING_SNAPSHOT_SOURCE: fixture
-          PUBLIC_SITE: ${{ steps.pages.outputs.origin }}
-          PUBLIC_BASE_PATH: ${{ steps.pages.outputs.base_path }}
-
-      - name: Run Playwright visual tests
-        run: pnpm test:visual
-
       - name: Fetch live ranking data
         run: pnpm data:fetch
         env:

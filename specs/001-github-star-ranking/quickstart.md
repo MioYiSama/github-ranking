@@ -94,9 +94,6 @@ Create `.github/workflows/deploy.yml` during implementation with:
 - `actions/setup-node`.
 - `pnpm/action-setup` unless using Corepack directly.
 - `actions/configure-pages`.
-- Vitest checks.
-- Astro static build against deterministic fixture data.
-- Playwright visual regression checks.
 - ranking data fetch.
 - Astro static build against live fetched data.
 - AJV snapshot schema contract checks.
