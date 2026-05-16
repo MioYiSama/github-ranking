@@ -2,7 +2,7 @@ name: Deploy GitHub Ranking
 
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "001-github-star-ranking"]
   workflow_dispatch:
   schedule:
     - cron: "17 2 * * *"
