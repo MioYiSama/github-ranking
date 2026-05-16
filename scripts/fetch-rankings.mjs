@@ -9,6 +9,9 @@ export const DEFAULT_OUTPUT = "src/data/generated/rankings.json";
 export const STALE_AFTER_HOURS = 36;
 export const RANKING_LIMIT = 1000;
 export const SEARCH_PAGE_SIZE = 100;
+export const DEFAULT_SEARCH_REQUEST_INTERVAL_MS = 2_200;
+export const DEFAULT_SEARCH_MAX_RETRIES = 3;
+export const DEFAULT_SECONDARY_RATE_LIMIT_RETRY_MS = 60_000;
 
 export const DEFAULT_LANGUAGES = [
   { language: "JavaScript", slug: "javascript", displayName: "JavaScript", enabled: true },
@@ -86,6 +89,74 @@ export function buildHeaders(token) {
   return headers;
 }
 
+function sleepFor(milliseconds) {
+  return new Promise((resolveSleep) => {
+    setTimeout(resolveSleep, milliseconds);
+  });
+}
+
+function getHeader(headers, name) {
+  return headers?.get?.(name) ?? null;
+}
+
+function numericHeader(headers, name) {
+  const value = Number(getHeader(headers, name) ?? Number.NaN);
+  return Number.isNaN(value) ? null : value;
+}
+
+async function waitForSearchSlot(rateLimitState, { requestIntervalMs, sleep }) {
+  if (!requestIntervalMs || requestIntervalMs <= 0) {
+    return;
+  }
+
+  const now = Date.now();
+  const elapsed = now - rateLimitState.lastRequestAt;
+
+  if (rateLimitState.lastRequestAt > 0 && elapsed < requestIntervalMs) {
+    await sleep(requestIntervalMs - elapsed);
+  }
+
+  rateLimitState.lastRequestAt = Date.now();
+}
+
+async function readGitHubErrorMessage(response) {
+  try {
+    const json = await response.json();
+    return typeof json.message === "string" ? json.message : "";
+  } catch {
+    return "";
+  }
+}
+
+function rateLimitDelayMs(response, { attempt, errorMessage, secondaryRateLimitRetryMs }) {
+  if (response.status !== 403 && response.status !== 429) {
+    return null;
+  }
+
+  const retryAfter = numericHeader(response.headers, "retry-after");
+
+  if (retryAfter !== null) {
+    return Math.max(retryAfter * 1000, 0);
+  }
+
+  const remaining = numericHeader(response.headers, "x-ratelimit-remaining");
+  const reset = numericHeader(response.headers, "x-ratelimit-reset");
+
+  if (remaining === 0 && reset !== null) {
+    return Math.max(reset * 1000 - Date.now(), 0) + 1000;
+  }
+
+  if (/rate limit|secondary rate|abuse/i.test(errorMessage)) {
+    return secondaryRateLimitRetryMs * 2 ** attempt;
+  }
+
+  return null;
+}
+
+function errorDetail(errorMessage) {
+  return errorMessage ? `: ${errorMessage}` : "";
+}
+
 function compareEntries(left, right) {
   if (right.stars !== left.stars) {
     return right.stars - left.stars;
@@ -150,6 +221,13 @@ function normalizeItems(items, { language, snapshotAt }) {
 export async function fetchSearchRanking(options = {}) {
   const { language, slug, displayName, token, fetchImpl = fetch, snapshotAt } = options;
   const pageCount = options.pageCount ?? 10;
+  const sleep = options.sleep ?? sleepFor;
+  const maxRetries = options.maxRetries ?? DEFAULT_SEARCH_MAX_RETRIES;
+  const requestIntervalMs = options.requestIntervalMs ?? DEFAULT_SEARCH_REQUEST_INTERVAL_MS;
+  const secondaryRateLimitRetryMs =
+    options.secondaryRateLimitRetryMs ?? DEFAULT_SECONDARY_RATE_LIMIT_RETRY_MS;
+  const rateLimitState = options.rateLimitState ?? { lastRequestAt: 0 };
+  const log = options.log ?? console.warn;
   const collectedItems = [];
   let totalCount = 0;
   let incompleteResults = false;
@@ -158,24 +236,47 @@ export async function fetchSearchRanking(options = {}) {
 
   for (let page = 1; page <= pageCount && collectedItems.length < RANKING_LIMIT; page += 1) {
     const url = buildSearchUrl({ language, page });
-    const response = await fetchImpl(url, { headers: buildHeaders(token) });
-    requestCount += 1;
-    const pageRateLimitRemaining = Number(
-      response.headers?.get?.("x-ratelimit-remaining") ?? Number.NaN,
-    );
+    const label = `${language ?? "overall"} ranking page ${page}`;
+    let response;
+    let errorMessage = "";
 
-    if (!Number.isNaN(pageRateLimitRemaining)) {
-      rateLimitRemaining =
-        rateLimitRemaining === null
-          ? pageRateLimitRemaining
-          : Math.min(rateLimitRemaining, pageRateLimitRemaining);
-    }
+    for (let attempt = 0; attempt <= maxRetries; attempt += 1) {
+      await waitForSearchSlot(rateLimitState, { requestIntervalMs, sleep });
 
-    if (!response.ok) {
-      const rateLimited = response.status === 403 && rateLimitRemaining === 0;
+      response = await fetchImpl(url, { headers: buildHeaders(token) });
+      requestCount += 1;
+      const pageRateLimitRemaining = numericHeader(response.headers, "x-ratelimit-remaining");
+
+      if (pageRateLimitRemaining !== null) {
+        rateLimitRemaining =
+          rateLimitRemaining === null
+            ? pageRateLimitRemaining
+            : Math.min(rateLimitRemaining, pageRateLimitRemaining);
+      }
+
+      if (response.ok) {
+        break;
+      }
+
+      errorMessage = await readGitHubErrorMessage(response);
+      const retryDelayMs = rateLimitDelayMs(response, {
+        attempt,
+        errorMessage,
+        secondaryRateLimitRetryMs,
+      });
+
+      if (retryDelayMs !== null && attempt < maxRetries) {
+        log(
+          `GitHub Search throttled ${label}; waiting ${Math.ceil(retryDelayMs / 1000)}s before retry ${attempt + 2}/${maxRetries + 1}${errorDetail(errorMessage)}`,
+        );
+        await sleep(retryDelayMs);
+        continue;
+      }
+
+      const rateLimited = retryDelayMs !== null || response.status === 429;
       const message = rateLimited
-        ? `GitHub Search rate limit exhausted while fetching ${language ?? "overall"} ranking`
-        : `GitHub Search returned ${response.status} for ${language ?? "overall"} ranking page ${page}`;
+        ? `GitHub Search rate limit blocked ${label} after ${attempt + 1} attempt(s)${errorDetail(errorMessage)}`
+        : `GitHub Search returned ${response.status} for ${label}${errorDetail(errorMessage)}`;
       throw new FatalFetchError(message, response.status);
     }
 
@@ -241,14 +342,30 @@ export async function buildSnapshot({
   fetchImpl = fetch,
   languages = DEFAULT_LANGUAGES,
   now = new Date(),
+  sleep = sleepFor,
+  maxRetries = DEFAULT_SEARCH_MAX_RETRIES,
+  requestIntervalMs = DEFAULT_SEARCH_REQUEST_INTERVAL_MS,
+  secondaryRateLimitRetryMs = DEFAULT_SECONDARY_RATE_LIMIT_RETRY_MS,
+  log = console.warn,
 } = {}) {
   const generatedAt = now.toISOString();
   const enabledLanguages = languages.filter((language) => language.enabled);
   const warnings = [];
+  const rateLimitState = { lastRequestAt: 0 };
   let requestCount = 0;
   let rateLimitRemaining = null;
 
-  const overall = await fetchSearchRanking({ token, fetchImpl, snapshotAt: generatedAt });
+  const overall = await fetchSearchRanking({
+    token,
+    fetchImpl,
+    snapshotAt: generatedAt,
+    sleep,
+    maxRetries,
+    requestIntervalMs,
+    secondaryRateLimitRetryMs,
+    rateLimitState,
+    log,
+  });
   requestCount += overall.requestCount;
   rateLimitRemaining = overall.rateLimitRemaining;
 
@@ -266,6 +383,12 @@ export async function buildSnapshot({
       token,
       fetchImpl,
       snapshotAt: generatedAt,
+      sleep,
+      maxRetries,
+      requestIntervalMs,
+      secondaryRateLimitRetryMs,
+      rateLimitState,
+      log,
     });
     requestCount += ranking.requestCount;
 

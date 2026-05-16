@@ -36,7 +36,7 @@ Fetch live ranking data locally:
 GITHUB_TOKEN=... pnpm data:fetch
 ```
 
-Without a token, GitHub Search API rate limits may be lower.
+The live fetch is intentionally throttled to stay under GitHub Search API limits while collecting 1000-entry rankings. Without a token, GitHub Search API rate limits may be lower.
 
 Regenerate deterministic 1000-row demo data:
 
@@ -59,6 +59,6 @@ Use `pnpm test:visual:update` only for intentional visual baseline changes.
 
 ## GitHub Pages
 
-The workflow in `.github/workflows/deploy.yml` runs on pushes to `main`, manual dispatch, and a daily schedule. Deployment happens only after dependencies install, ranking data fetches successfully, tests pass, the static build succeeds, and visual tests pass. If a scheduled refresh fails before deployment, GitHub Pages keeps serving the previous successful artifact.
+The workflow in `.github/workflows/deploy.yml` runs on pushes to `main` and `001-github-star-ranking`, manual dispatch, and a daily schedule. Deployment happens only after dependencies install, ranking data fetches successfully, tests pass, the static build succeeds, and visual tests pass. If a scheduled refresh fails before deployment, GitHub Pages keeps serving the previous successful artifact.
 
-Set repository Pages source to GitHub Actions. The workflow uses the built-in `GITHUB_TOKEN`; do not add visitor-facing or client-side tokens.
+Before the first deploy, enable Pages in GitHub: Settings -> Pages -> Build and deployment -> Source -> GitHub Actions. The workflow uses the built-in `GITHUB_TOKEN`; do not add visitor-facing or client-side tokens.

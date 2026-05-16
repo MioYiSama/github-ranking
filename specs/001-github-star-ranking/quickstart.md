@@ -10,7 +10,7 @@
 - `@types/node`
 - AJV for snapshot schema validation
 - Playwright browsers installed for visual regression tests
-- A GitHub repository with Pages source set to GitHub Actions
+- A GitHub repository with Pages enabled under Settings -> Pages -> Build and deployment -> Source -> GitHub Actions
 - Optional local `GITHUB_TOKEN` for fetching public repository rankings during development
 
 ## Install
@@ -26,7 +26,7 @@ pnpm exec playwright install --with-deps chromium
 GITHUB_TOKEN=... pnpm data:fetch
 ```
 
-If no token is provided, local fetch may hit lower GitHub Search rate limits. Tests should rely on fixtures instead of live API calls.
+The live fetch is intentionally throttled to stay under GitHub Search API limits while collecting 1000-entry rankings. If no token is provided, local fetch may hit lower limits. Tests should rely on fixtures instead of live API calls.
 
 ## Development
 
@@ -98,6 +98,8 @@ Create `.github/workflows/deploy.yml` during implementation with:
 - `actions/deploy-pages`.
 
 `withastro/action` is allowed only if it is compatible with the pinned Astro 7 prerelease/Vite 8 setup and keeps the fetch, validation, build, artifact, and deploy phases reviewable.
+
+Before the first run, enable Pages in repository settings and select GitHub Actions as the build and deployment source. `actions/configure-pages` can read Pages metadata with the built-in `GITHUB_TOKEN`, but automatic Pages enablement requires a separate token with repository administration or Pages write permission.
 
 Deployment must happen only after data fetch and build succeed. If a scheduled run fails, do not deploy a new artifact; the previous GitHub Pages deployment remains the visitor-facing fallback.
 

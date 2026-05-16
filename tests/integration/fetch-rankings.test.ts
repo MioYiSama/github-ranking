@@ -50,6 +50,7 @@ describe("fetch ranking integration boundaries", () => {
         { language: "JavaScript", slug: "javascript", displayName: "JavaScript", enabled: true },
       ],
       now: new Date("2026-05-16T00:00:00.000Z"),
+      requestIntervalMs: 0,
     });
 
     expect(fetchImpl).toHaveBeenCalledTimes(2);
@@ -66,5 +67,38 @@ describe("fetch ranking integration boundaries", () => {
         snapshotAt: "2026-05-16T00:00:00.000Z",
       }),
     ).rejects.toBeInstanceOf(FatalFetchError);
+  });
+
+  it("retries GitHub Search rate-limit responses", async () => {
+    const sleep = vi.fn(async () => undefined);
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce(
+        response(
+          { message: "You have exceeded a secondary rate limit." },
+          { ok: false, status: 403, remaining: "1" },
+        ),
+      )
+      .mockResolvedValueOnce(
+        response({
+          total_count: 1,
+          incomplete_results: false,
+          items: [githubItem],
+        }),
+      ) as unknown as typeof fetch;
+
+    const ranking = await fetchSearchRanking({
+      fetchImpl,
+      snapshotAt: "2026-05-16T00:00:00.000Z",
+      sleep,
+      requestIntervalMs: 0,
+      secondaryRateLimitRetryMs: 123,
+      log: () => undefined,
+    });
+
+    expect(fetchImpl).toHaveBeenCalledTimes(2);
+    expect(sleep).toHaveBeenCalledWith(123);
+    expect(ranking.items[0]?.fullName).toBe("owner/repo");
+    expect(ranking.requestCount).toBe(2);
   });
 });
