@@ -231,6 +231,7 @@ button:focus-visible {
   margin: 5px 0 0;
   color: var(--muted);
   font-size: 0.92rem;
+  overflow-wrap: anywhere;
 }
 
 .star-cell {
@@ -320,7 +321,8 @@ button:focus-visible {
 .virtual-ranking__row {
   align-items: start;
   border-bottom: 1px solid var(--border);
-  min-height: 86px;
+  min-height: 112px;
+  overflow: hidden;
   position: absolute;
   width: 100%;
   will-change: transform;
@@ -330,6 +332,23 @@ button:focus-visible {
   display: grid;
   gap: 5px;
   min-width: 0;
+}
+
+.virtual-ranking__row .repo-link,
+.virtual-ranking__row .repo-description {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.virtual-ranking__row .repo-link {
+  -webkit-line-clamp: 1;
+  overflow-wrap: anywhere;
+}
+
+.virtual-ranking__row .repo-description {
+  -webkit-line-clamp: 2;
+  margin-top: 0;
 }
 
 .virtual-ranking__row .language-pill {

@@ -7,7 +7,7 @@ describe("language page static smoke", () => {
 
     expect(html).toContain("JavaScript Repository Ranking");
     expect(html).toContain("twbs/bootstrap");
-    expect(html).toContain('href="/"');
+    expect(html).toContain('href="/github-ranking/"');
   });
 
   it("renders empty language state on direct reload", () => {

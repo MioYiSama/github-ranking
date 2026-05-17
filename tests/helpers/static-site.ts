@@ -11,6 +11,8 @@ export function ensureBuiltSite() {
       env: {
         ...process.env,
         ASTRO_TELEMETRY_DISABLED: "1",
+        PUBLIC_BASE_PATH: "/github-ranking/",
+        PUBLIC_SITE: "https://mioyisama.github.io",
         RANKING_SNAPSHOT_SOURCE: "fixture",
         SNAPSHOT_NOW: "2026-05-16T12:00:00.000Z",
       },

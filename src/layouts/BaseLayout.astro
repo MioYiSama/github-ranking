@@ -1,6 +1,7 @@
 ---
 import LanguageNav from "../components/LanguageNav.astro";
 import SnapshotStatus from "../components/SnapshotStatus.astro";
+import { withBasePath } from "../lib/paths";
 import type { RankingSnapshot } from "../lib/types";
 import "../styles/global.css";
 
@@ -12,6 +13,8 @@ interface Props {
 }
 
 const { title, description, currentSlug, snapshot } = Astro.props;
+const homePath = withBasePath("/");
+const faviconPath = withBasePath("/favicon.svg");
 ---
 
 <!doctype html>
@@ -20,7 +23,7 @@ const { title, description, currentSlug, snapshot } = Astro.props;
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={description} />
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href={faviconPath} type="image/svg+xml" />
     <title>{title}</title>
   </head>
   <body>
@@ -28,8 +31,8 @@ const { title, description, currentSlug, snapshot } = Astro.props;
       <header class="site-header">
         <div class="site-header__inner">
           <div class="brand-row">
-            <a class="brand" href="/" aria-label="GitHub repository star rankings overall page">
-              <img src="/favicon.svg" alt="" width="38" height="38" />
+            <a class="brand" href={homePath} aria-label="GitHub repository star rankings overall page">
+              <img src={faviconPath} alt="" width="38" height="38" />
               <span class="brand__text">
                 <span class="brand__name">GitHub Star Rankings</span>
                 <span class="brand__meta">Public repository snapshots</span>
@@ -50,4 +53,3 @@ const { title, description, currentSlug, snapshot } = Astro.props;
     </div>
   </body>
 </html>
-

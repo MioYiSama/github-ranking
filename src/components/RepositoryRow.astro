@@ -15,9 +15,8 @@ const description = entry.description ?? "No description available.";
   <td class="rank-cell">#{entry.rank}</td>
   <td class="repo-cell">
     <a class="repo-link" href={entry.htmlUrl} rel="noreferrer" target="_blank">{entry.fullName}</a>
-    <p class="repo-description">{description}</p>
+    <p class="repo-description" title={description}>{description}</p>
   </td>
   <td class="star-cell" aria-label={`${stars} stars`}>{stars}</td>
   <td><span class="language-pill">{language}</span></td>
 </tr>
-

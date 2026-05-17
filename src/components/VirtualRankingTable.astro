@@ -99,6 +99,7 @@ const dataId = `virtual-ranking-${crypto.randomUUID()}`;
     const description = document.createElement("span");
     description.className = "repo-description";
     description.textContent = entry.description ?? "No description available.";
+    description.title = description.textContent;
 
     cell.append(link, description);
     return cell;
@@ -146,7 +147,7 @@ const dataId = `virtual-ranking-${crypto.randomUUID()}`;
     const virtualizer = new Virtualizer<HTMLElement, HTMLElement>({
       count: entries.length,
       getScrollElement: () => viewportElement,
-      estimateSize: () => 86,
+      estimateSize: () => 112,
       overscan: 12,
       getItemKey: (index) => entries[index]?.id ?? index,
       scrollToFn: elementScroll,
