@@ -10,6 +10,8 @@ interface Props {
 
 const { caption, entries, emptyTitle, emptyMessage } = Astro.props;
 const dataId = `virtual-ranking-${crypto.randomUUID()}`;
+const filterId = `${dataId}-filter`;
+const statusId = `${dataId}-status`;
 ---
 
 {
@@ -22,7 +24,29 @@ const dataId = `virtual-ranking-${crypto.randomUUID()}`;
     >
       <div class="virtual-ranking__title" id={`${dataId}-caption`}>
         <span>{caption}</span>
-        <span class="muted">{entries.length.toLocaleString("en-US")} repositories</span>
+        <span class="muted" data-virtual-count>{entries.length.toLocaleString("en-US")} repositories</span>
+      </div>
+      <div class="virtual-ranking__tools">
+        <label class="virtual-ranking__search-label" for={filterId}>Search repositories</label>
+        <div class="virtual-ranking__search-control">
+          <span class="virtual-ranking__search-icon" aria-hidden="true"></span>
+          <input
+            id={filterId}
+            class="virtual-ranking__search"
+            data-virtual-filter
+            type="search"
+            placeholder="Search repositories"
+            autocomplete="off"
+            spellcheck="false"
+            aria-describedby={statusId}
+          />
+          <button class="virtual-ranking__clear" data-virtual-clear type="button" aria-label="Clear search" title="Clear search" hidden>
+            ×
+          </button>
+        </div>
+        <span id={statusId} class="virtual-ranking__status muted" data-virtual-status>
+          Showing {entries.length.toLocaleString("en-US")} repositories
+        </span>
       </div>
       <div class="virtual-ranking__table" role="table" aria-rowcount={entries.length + 1}>
         <div class="virtual-ranking__header" role="row">
@@ -38,6 +62,7 @@ const dataId = `virtual-ranking-${crypto.randomUUID()}`;
           tabindex="0"
           aria-label={`${caption} scrollable list`}
         >
+          <div class="virtual-ranking__empty" data-virtual-empty hidden>No matching repositories.</div>
           <div class="virtual-ranking__spacer" data-virtual-spacer>
             <div class="virtual-ranking__rows" data-virtual-rows />
           </div>
@@ -54,6 +79,7 @@ const dataId = `virtual-ranking-${crypto.randomUUID()}`;
 }
 
 <script>
+  import Fuse from "fuse.js";
   import {
     Virtualizer,
     elementScroll,
@@ -63,14 +89,36 @@ const dataId = `virtual-ranking-${crypto.randomUUID()}`;
   interface Entry {
     rank: number;
     id: number;
+    owner: string;
+    name: string;
     fullName: string;
     htmlUrl: string;
     description: string | null;
+    topics?: string[];
     stars: number;
     primaryLanguage: string | null;
   }
 
   const starFormatter = new Intl.NumberFormat("en-US");
+  const countFormatter = new Intl.NumberFormat("en-US");
+
+  function normalizeSearchText(value: string | null | undefined): string {
+    return value?.toLocaleLowerCase().trim() ?? "";
+  }
+
+  function createSearchText(entry: Entry): string {
+    return [
+      entry.fullName,
+      entry.owner,
+      entry.name,
+      entry.primaryLanguage,
+      entry.description,
+      ...(entry.topics ?? []),
+    ]
+      .map(normalizeSearchText)
+      .filter(Boolean)
+      .join(" ");
+  }
 
   function createCell(text: string, className?: string) {
     const cell = document.createElement("span");
@@ -101,7 +149,47 @@ const dataId = `virtual-ranking-${crypto.randomUUID()}`;
     description.textContent = entry.description ?? "No description available.";
     description.title = description.textContent;
 
-    cell.append(link, description);
+    const tags = document.createElement("span");
+    const topics = entry.topics ?? [];
+    const visibleTopics = topics.slice(0, 3);
+    tags.className = "repo-tags";
+
+    if (visibleTopics.length > 0) {
+      const topicList = topics.join(", ");
+      tags.tabIndex = 0;
+      tags.setAttribute("aria-label", `${entry.fullName} topics: ${topicList}`);
+      tags.append(
+        ...visibleTopics.map((topic) => {
+          const tag = document.createElement("span");
+          tag.className = "repo-tag";
+          tag.textContent = topic;
+          tag.title = topic;
+          return tag;
+        }),
+      );
+
+      if (topics.length > visibleTopics.length) {
+        const moreTag = document.createElement("span");
+        moreTag.className = "repo-tag repo-tag--more";
+        moreTag.textContent = `+${topics.length - visibleTopics.length}`;
+        tags.append(moreTag);
+      }
+
+      const popup = document.createElement("span");
+      popup.className = "repo-tags__popup";
+      popup.setAttribute("role", "tooltip");
+
+      const title = document.createElement("strong");
+      title.textContent = "Topics";
+
+      const list = document.createElement("span");
+      list.textContent = topicList;
+
+      popup.append(title, list);
+      tags.append(popup);
+    }
+
+    cell.append(link, description, tags);
     return cell;
   }
 
@@ -111,18 +199,99 @@ const dataId = `virtual-ranking-${crypto.randomUUID()}`;
     const viewport = root.querySelector<HTMLElement>("[data-virtual-viewport]");
     const spacer = root.querySelector<HTMLElement>("[data-virtual-spacer]");
     const rows = root.querySelector<HTMLElement>("[data-virtual-rows]");
+    const table = root.querySelector<HTMLElement>(".virtual-ranking__table");
+    const filter = root.querySelector<HTMLInputElement>("[data-virtual-filter]");
+    const clear = root.querySelector<HTMLButtonElement>("[data-virtual-clear]");
+    const count = root.querySelector<HTMLElement>("[data-virtual-count]");
+    const status = root.querySelector<HTMLElement>("[data-virtual-status]");
+    const empty = root.querySelector<HTMLElement>("[data-virtual-empty]");
 
-    if (!dataScript?.textContent || !viewport || !spacer || !rows) {
+    if (!dataScript?.textContent || !viewport || !spacer || !rows || !table || !filter || !clear || !count || !status || !empty) {
       return;
     }
 
     const entries = JSON.parse(dataScript.textContent) as Entry[];
+    const searchableEntries = entries.map((entry) => ({
+      entry,
+      searchText: createSearchText(entry),
+    }));
+    let filteredEntries = entries;
     const viewportElement = viewport;
     const spacerElement = spacer;
     const rowsElement = rows;
+    const tableElement = table;
+    const filterElement = filter;
+    const clearElement = clear;
+    const countElement = count;
+    const statusElement = status;
+    const emptyElement = empty;
+    const fuse = new Fuse(entries, {
+      ignoreLocation: true,
+      includeScore: false,
+      threshold: 0.2,
+      keys: [
+        { name: "fullName", weight: 0.5 },
+        { name: "owner", weight: 0.16 },
+        { name: "name", weight: 0.16 },
+        { name: "topics", weight: 0.14 },
+        { name: "primaryLanguage", weight: 0.04 },
+      ],
+    });
     viewportElement.style.height = "720px";
     viewportElement.style.maxHeight = "72vh";
     viewportElement.style.minHeight = "440px";
+    let virtualizer: Virtualizer<HTMLElement, HTMLElement>;
+
+    function repositoryCountText(count: number) {
+      return `${countFormatter.format(count)} ${count === 1 ? "repository" : "repositories"}`;
+    }
+
+    function updateSummary(query: string) {
+      tableElement.setAttribute("aria-rowcount", String(filteredEntries.length + 1));
+      countElement.textContent = repositoryCountText(filteredEntries.length);
+      clearElement.hidden = query.length === 0;
+      emptyElement.hidden = filteredEntries.length > 0;
+
+      if (query.length === 0) {
+        statusElement.textContent = `Showing ${repositoryCountText(entries.length)}`;
+        return;
+      }
+
+      statusElement.textContent = `Showing ${repositoryCountText(filteredEntries.length)} of ${repositoryCountText(entries.length)}`;
+    }
+
+    function updateVirtualizerOptions() {
+      virtualizer.setOptions({
+        ...virtualizer.options,
+        count: filteredEntries.length,
+        getItemKey: (index) => filteredEntries[index]?.id ?? index,
+      });
+    }
+
+    function applyFilter(query: string) {
+      const normalizedQuery = normalizeSearchText(query);
+
+      if (!normalizedQuery) {
+        filteredEntries = entries;
+      } else {
+        const directMatches = searchableEntries
+          .filter((item) => item.searchText.includes(normalizedQuery))
+          .map((item) => item.entry);
+
+        if (directMatches.length > 0 || normalizedQuery.length < 4) {
+          filteredEntries = directMatches;
+        } else {
+          const matchedIds = new Set(fuse.search(normalizedQuery).map((match) => match.item.id));
+          filteredEntries = entries.filter((entry) => matchedIds.has(entry.id));
+        }
+      }
+
+      updateVirtualizerOptions();
+      viewportElement.scrollTop = 0;
+      virtualizer.measure();
+      updateSummary(normalizedQuery);
+      render();
+    }
 
     function observeViewportRect(_instance: Virtualizer<HTMLElement, HTMLElement>, callback: (rect: { width: number; height: number }) => void) {
       const update = () => {
@@ -144,12 +313,12 @@ const dataId = `virtual-ranking-${crypto.randomUUID()}`;
       };
     }
 
-    const virtualizer = new Virtualizer<HTMLElement, HTMLElement>({
+    virtualizer = new Virtualizer<HTMLElement, HTMLElement>({
       count: entries.length,
       getScrollElement: () => viewportElement,
-      estimateSize: () => 112,
+      estimateSize: () => 136,
       overscan: 12,
-      getItemKey: (index) => entries[index]?.id ?? index,
+      getItemKey: (index) => filteredEntries[index]?.id ?? index,
       scrollToFn: elementScroll,
       observeElementRect: observeViewportRect,
       observeElementOffset,
@@ -162,7 +331,7 @@ const dataId = `virtual-ranking-${crypto.randomUUID()}`;
       spacerElement.style.height = `${virtualizer.getTotalSize()}px`;
       rowsElement.replaceChildren(
         ...virtualItems.map((virtualItem) => {
-          const entry = entries[virtualItem.index];
+          const entry = filteredEntries[virtualItem.index];
           const row = document.createElement("div");
 
           if (!entry) {
@@ -171,7 +340,7 @@ const dataId = `virtual-ranking-${crypto.randomUUID()}`;
 
           row.className = "virtual-ranking__row";
           row.setAttribute("role", "row");
-          row.setAttribute("aria-rowindex", String(entry.rank + 1));
+          row.setAttribute("aria-rowindex", String(virtualItem.index + 2));
           row.setAttribute("data-index", String(virtualItem.index));
           row.style.transform = `translateY(${virtualItem.start}px)`;
 
@@ -192,6 +361,13 @@ const dataId = `virtual-ranking-${crypto.randomUUID()}`;
     }
 
     const cleanup = virtualizer._didMount();
+    filterElement.addEventListener("input", () => applyFilter(filterElement.value));
+    clearElement.addEventListener("click", () => {
+      filterElement.value = "";
+      applyFilter("");
+      filterElement.focus();
+    });
+    updateSummary("");
     render();
     window.addEventListener("beforeunload", cleanup, { once: true });
   }

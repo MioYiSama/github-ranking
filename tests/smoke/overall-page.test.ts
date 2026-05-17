@@ -10,6 +10,7 @@ describe("overall page static smoke", () => {
     expect(html).toContain("freeCodeCamp/freeCodeCamp");
     expect(html).toContain("vercel/next.js");
     expect(html).toContain("https://github.com/vercel/next.js");
+    expect(html).toContain("Search repositories");
     expect(html).toContain('href="/github-ranking/languages/javascript/"');
     expect(html).toContain('href="/github-ranking/"');
     expect(html).toContain('href="/github-ranking/favicon.svg"');

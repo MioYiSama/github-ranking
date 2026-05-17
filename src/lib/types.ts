@@ -7,6 +7,7 @@ export interface RepositoryRankingEntry {
   fullName: string;
   htmlUrl: string;
   description: string | null;
+  topics?: string[];
   stars: number;
   primaryLanguage: string | null;
   fork: boolean;

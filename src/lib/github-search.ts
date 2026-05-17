@@ -27,6 +27,7 @@ export interface GitHubRepositorySearchItem {
   owner?: GitHubOwner | null;
   html_url?: string;
   description?: string | null;
+  topics?: string[] | null;
   stargazers_count?: number;
   language?: string | null;
   fork?: boolean;
@@ -132,6 +133,7 @@ export function normalizeGitHubSearchResponse(
         fullName: item.full_name,
         htmlUrl: item.html_url,
         description: item.description ?? null,
+        topics: Array.isArray(item.topics) ? item.topics : [],
         stars: item.stargazers_count,
         primaryLanguage,
         fork: item.fork ?? false,

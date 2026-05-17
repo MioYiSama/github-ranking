@@ -10,6 +10,7 @@
 - `@types/node@25.8.0`: Explicit Node types for scripts/configs. Alternative: ambient untyped globals, rejected for TypeScript 6 clarity.
 - `tailwindcss@4.3.0` and `@tailwindcss/vite@4.3.0`: Tailwind v4 Vite integration. Alternative: plain CSS, rejected by plan.
 - `@tanstack/virtual-core@3.14.0`: Vanilla virtualizer for the 1000-row homepage ranking. Alternative: render all rows in the DOM, rejected because it creates unnecessary layout and browser work for large ranking snapshots.
+- `fuse.js@7.3.0`: Browser-side fuzzy filtering for each rendered ranking list. Alternative: hand-written substring scoring, rejected because typo-tolerant filtering across names, descriptions, languages, and topics is user-facing behavior and a focused dependency is lower risk than custom scoring logic.
 
 ## Testing And Quality
 

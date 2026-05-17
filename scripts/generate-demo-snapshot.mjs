@@ -76,7 +76,26 @@ function slugFor(language) {
   return languageSlugs.get(language) ?? language.toLowerCase().replace(/[^a-z0-9]+/g, "-");
 }
 
-function repo(id, owner, name, stars, primaryLanguage, description) {
+function topicsFor(language, owner) {
+  const normalized = slugFor(language ?? "repository");
+  const baseline = ["github-ranking", normalized, "open-source"];
+
+  if (owner.startsWith("demo-")) {
+    return baseline;
+  }
+
+  return [...baseline, "popular", "stars"];
+}
+
+function repo(
+  id,
+  owner,
+  name,
+  stars,
+  primaryLanguage,
+  description,
+  topics = topicsFor(primaryLanguage, owner),
+) {
   return {
     id,
     nodeId: `fixture-node-${id}`,
@@ -85,6 +104,7 @@ function repo(id, owner, name, stars, primaryLanguage, description) {
     fullName: `${owner}/${name}`,
     htmlUrl: `https://github.com/${owner}/${name}`,
     description,
+    topics,
     stars,
     primaryLanguage,
     fork: false,

@@ -1,5 +1,5 @@
 ---
-import RankingTable from "../../components/RankingTable.astro";
+import VirtualRankingTable from "../../components/VirtualRankingTable.astro";
 import { getEnabledLanguages } from "../../config/languages";
 import { snapshotData } from "../../data/snapshot";
 import BaseLayout from "../../layouts/BaseLayout.astro";
@@ -30,7 +30,7 @@ const entries = ranking?.items ?? [];
   currentSlug={language.slug}
   snapshot={snapshot}
 >
-  <RankingTable
+  <VirtualRankingTable
     caption={`Top ${language.displayName} repositories`}
     entries={entries}
     emptyTitle={`No ${language.displayName} ranking entries`}

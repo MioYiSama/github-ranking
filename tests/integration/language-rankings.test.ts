@@ -19,6 +19,9 @@ describe("language ranking behavior", () => {
   });
 
   it("generates page data for every configured language", () => {
-    expect(getEnabledLanguages().map((language) => language.slug)).toContain("jupyter-notebook");
+    const slugs = getEnabledLanguages().map((language) => language.slug);
+
+    expect(slugs).toContain("javascript");
+    expect(slugs.every((slug) => getLanguageRanking(snapshot, slug))).toBe(true);
   });
 });

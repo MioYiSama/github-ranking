@@ -9,6 +9,10 @@ const { entry } = Astro.props;
 const stars = new Intl.NumberFormat("en-US").format(entry.stars);
 const language = entry.primaryLanguage ?? "Unknown";
 const description = entry.description ?? "No description available.";
+const topics = entry.topics ?? [];
+const visibleTopics = topics.slice(0, 3);
+const hiddenTopicCount = Math.max(topics.length - visibleTopics.length, 0);
+const topicList = topics.join(", ");
 ---
 
 <tr>
@@ -16,6 +20,20 @@ const description = entry.description ?? "No description available.";
   <td class="repo-cell">
     <a class="repo-link" href={entry.htmlUrl} rel="noreferrer" target="_blank">{entry.fullName}</a>
     <p class="repo-description" title={description}>{description}</p>
+    {
+      visibleTopics.length > 0 && (
+        <div class="repo-tags" tabindex="0" aria-label={`${entry.fullName} topics: ${topicList}`}>
+          {visibleTopics.map((topic) => (
+            <span class="repo-tag" title={topic}>{topic}</span>
+          ))}
+          {hiddenTopicCount > 0 && <span class="repo-tag repo-tag--more">+{hiddenTopicCount}</span>}
+          <div class="repo-tags__popup" role="tooltip">
+            <strong>Topics</strong>
+            <span>{topicList}</span>
+          </div>
+        </div>
+      )
+    }
   </td>
   <td class="star-cell" aria-label={`${stars} stars`}>{stars}</td>
   <td><span class="language-pill">{language}</span></td>

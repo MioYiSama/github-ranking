@@ -31,6 +31,13 @@ export type RepositoryRankingInput = Omit<
 
 export const RANKING_LIMIT = 1000;
 
+function normalizeTopics(topics: string[] | undefined): string[] {
+  return [...new Set(topics ?? [])]
+    .map((topic) => topic.trim())
+    .filter(Boolean)
+    .slice(0, 20);
+}
+
 export function compareRankingEntries(
   left: Pick<RepositoryRankingInput, "stars" | "fullName">,
   right: Pick<RepositoryRankingInput, "stars" | "fullName">,
@@ -66,6 +73,7 @@ export function buildRankingEntries(
       fullName: entry.fullName,
       htmlUrl: entry.htmlUrl,
       description: entry.description ?? null,
+      topics: normalizeTopics(entry.topics),
       stars: entry.stars,
       primaryLanguage: entry.primaryLanguage ?? null,
       fork: entry.fork ?? false,

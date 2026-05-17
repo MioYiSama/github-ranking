@@ -167,6 +167,15 @@
         "description": {
           "type": ["string", "null"]
         },
+        "topics": {
+          "type": "array",
+          "maxItems": 20,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "default": []
+        },
         "stars": {
           "type": "integer",
           "minimum": 0
