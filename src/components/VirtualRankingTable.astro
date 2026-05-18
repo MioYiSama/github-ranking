@@ -118,7 +118,7 @@ const statusId = `${dataId}-status`;
   const moreTagClass =
     "peer inline-block flex-none overflow-hidden whitespace-nowrap rounded-full border border-slate-200 bg-slate-100 px-2 py-0.5 text-xs font-bold leading-snug text-slate-500 outline-none focus-visible:ring-2 focus-visible:ring-slate-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400";
   const tagPopupClass =
-    "absolute left-0 top-[calc(100%+0.5rem)] z-[100] hidden max-h-44 w-[min(22rem,72vw)] overflow-auto rounded-lg border border-slate-200 bg-white bg-clip-padding p-3 text-sm leading-snug text-slate-950 opacity-100 shadow-[0_18px_48px_rgb(15_23_42_/_0.22),0_0_0_1px_#fff] peer-hover:block peer-focus:block dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:shadow-[0_18px_48px_rgb(0_0_0_/_0.45),0_0_0_1px_rgb(15_23_42)]";
+    "topic-popup absolute left-0 top-[calc(100%+0.5rem)] z-[100] hidden max-h-44 w-[min(22rem,72vw)] overflow-auto rounded-lg border border-slate-200 bg-white bg-clip-padding p-3 text-sm leading-snug text-slate-950 opacity-100 shadow-[0_18px_48px_rgb(15_23_42_/_0.22),0_0_0_1px_#fff] peer-hover:block peer-focus:block dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:shadow-[0_18px_48px_rgb(0_0_0_/_0.45),0_0_0_1px_rgb(15_23_42)]";
   const tagPopupListClass = "flex flex-wrap gap-1.5";
   const tagPopupBadgeClass =
     "inline-block max-w-full overflow-hidden text-ellipsis whitespace-nowrap rounded-full border border-sky-200 bg-sky-50 px-2 py-0.5 text-xs font-bold leading-snug text-sky-800 dark:border-sky-800 dark:bg-sky-950 dark:text-sky-200";
@@ -157,7 +157,7 @@ const statusId = `${dataId}-status`;
     return cell;
   }
 
-  function createRepositoryCell(entry: Entry) {
+  function createRepositoryCell(entry: Entry, openTopicsAbove = false) {
     const cell = document.createElement("span");
     cell.setAttribute("role", "cell");
     cell.className = repoCellClass;
@@ -221,6 +221,9 @@ const statusId = `${dataId}-status`;
         const popup = document.createElement("span");
         popup.id = popupId;
         popup.className = tagPopupClass;
+        if (openTopicsAbove) {
+          popup.classList.add("topic-popup--above");
+        }
         popup.setAttribute("role", "tooltip");
 
         const title = document.createElement("strong");
@@ -405,6 +408,9 @@ const statusId = `${dataId}-status`;
           row.setAttribute("data-virtual-row", "");
           row.style.transform = `translateY(${virtualItem.start}px)`;
 
+          const openTopicsAbove =
+            virtualItem.start + virtualItem.size - viewportElement.scrollTop > viewportElement.clientHeight - 196;
+
           const language = document.createElement("span");
           language.setAttribute("role", "cell");
           language.className = languagePillClass;
@@ -412,7 +418,7 @@ const statusId = `${dataId}-status`;
 
           row.append(
             createCell(`#${entry.rank}`, rankCellClass),
-            createRepositoryCell(entry),
+            createRepositoryCell(entry, openTopicsAbove),
             createCell(starFormatter.format(entry.stars), starCellClass),
             language,
           );

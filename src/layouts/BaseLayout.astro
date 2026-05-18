@@ -15,6 +15,7 @@ interface Props {
 const { title, description, currentSlug, snapshot } = Astro.props;
 const homePath = withBasePath("/");
 const faviconPath = withBasePath("/favicon.svg");
+const repositoryUrl = "https://github.com/MioYiSama/github-ranking";
 ---
 
 <!doctype html>
@@ -30,13 +31,21 @@ const faviconPath = withBasePath("/favicon.svg");
     <div class="min-h-screen">
       <header class="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
         <div class="mx-auto grid w-full max-w-[1180px] gap-[18px] px-4 py-[22px] pb-[18px] max-[720px]:px-2.5">
-          <div class="flex items-center justify-start gap-4">
+          <div class="flex flex-wrap items-center justify-between gap-3">
             <a class="inline-flex flex-none items-center gap-3 text-inherit no-underline" href={homePath} aria-label="GitHub repository star rankings overall page">
               <img class="size-[38px]" src={faviconPath} alt="" width="38" height="38" />
               <span class="grid gap-0.5">
                 <span class="text-[1.12rem] font-bold">GitHub Star Rankings</span>
-                <span class="text-sm text-slate-500 dark:text-slate-400">Public repository snapshots</span>
               </span>
+            </a>
+            <a
+              class="inline-flex h-10 flex-none items-center rounded-full border border-slate-200 bg-slate-50 px-3 text-sm font-bold text-slate-700 no-underline hover:border-sky-300 hover:bg-sky-50 hover:text-sky-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-sky-700 dark:hover:bg-sky-950 dark:hover:text-sky-200"
+              href={repositoryUrl}
+              rel="noreferrer"
+              target="_blank"
+              aria-label="Open GitHub repository"
+            >
+              GitHub
             </a>
           </div>
           <LanguageNav currentSlug={currentSlug} />
