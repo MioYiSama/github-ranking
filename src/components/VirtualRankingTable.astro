@@ -17,22 +17,22 @@ const statusId = `${dataId}-status`;
 {
   entries.length > 0 ? (
     <section
-      class="virtual-ranking"
+      class="overflow-hidden rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900"
       data-virtual-ranking
       data-virtual-data-id={dataId}
       aria-labelledby={`${dataId}-caption`}
     >
-      <div class="virtual-ranking__title" id={`${dataId}-caption`}>
+      <div class="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between" id={`${dataId}-caption`}>
         <span>{caption}</span>
-        <span class="muted" data-virtual-count>{entries.length.toLocaleString("en-US")} repositories</span>
+        <span class="text-sm text-slate-500 dark:text-slate-400" data-virtual-count>{entries.length.toLocaleString("en-US")} repositories</span>
       </div>
-      <div class="virtual-ranking__tools">
-        <label class="virtual-ranking__search-label" for={filterId}>Search repositories</label>
-        <div class="virtual-ranking__search-control">
-          <span class="virtual-ranking__search-icon" aria-hidden="true"></span>
+      <div class="flex flex-col gap-2 border-t border-slate-200 bg-slate-50/70 p-3 sm:flex-row sm:items-center sm:justify-between sm:px-4 dark:border-slate-800 dark:bg-slate-950/35">
+        <label class="sr-only" for={filterId}>Search repositories</label>
+        <div class="flex h-10 w-full flex-none items-center gap-2 rounded-full border border-slate-200 bg-white px-3 sm:max-w-[440px] dark:border-slate-700 dark:bg-slate-900">
+          <span class="relative size-3.5 flex-none rounded-full border-2 border-slate-500 after:absolute after:-bottom-0.5 after:-right-1 after:h-0.5 after:w-2 after:rotate-45 after:rounded-full after:bg-slate-500 after:content-[''] dark:border-slate-400 dark:after:bg-slate-400" aria-hidden="true"></span>
           <input
             id={filterId}
-            class="virtual-ranking__search"
+            class="min-w-0 flex-1 border-0 bg-transparent text-sm text-slate-950 outline-none placeholder:text-slate-500 dark:text-slate-100 dark:placeholder:text-slate-400"
             data-virtual-filter
             type="search"
             placeholder="Search repositories"
@@ -40,40 +40,40 @@ const statusId = `${dataId}-status`;
             spellcheck="false"
             aria-describedby={statusId}
           />
-          <button class="virtual-ranking__clear" data-virtual-clear type="button" aria-label="Clear search" title="Clear search" hidden>
+          <button class="grid size-6 place-items-center rounded-full border-0 bg-slate-100 p-0 text-base font-bold leading-none text-slate-500 hover:bg-blue-100 hover:text-teal-800 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-teal-200" data-virtual-clear type="button" aria-label="Clear search" title="Clear search" hidden>
             ×
           </button>
         </div>
-        <span id={statusId} class="virtual-ranking__status muted" data-virtual-status>
+        <span id={statusId} class="text-sm text-slate-500 sm:whitespace-nowrap dark:text-slate-400" data-virtual-status>
           Showing {entries.length.toLocaleString("en-US")} repositories
         </span>
       </div>
-      <div class="virtual-ranking__table" role="table" aria-rowcount={entries.length + 1}>
-        <div class="virtual-ranking__header" role="row">
-          <span role="columnheader">Rank</span>
-          <span role="columnheader">Repository</span>
-          <span role="columnheader">Stars</span>
-          <span role="columnheader">Language</span>
+      <div class="w-full min-w-0 md:min-w-[760px]" data-virtual-table role="table" aria-rowcount={entries.length + 1}>
+        <div class="sticky top-0 z-10 grid grid-cols-[4.25rem_minmax(0,1fr)] border-y border-slate-200 bg-slate-100 text-xs font-bold uppercase tracking-normal text-slate-700 md:grid-cols-[4.5rem_minmax(18rem,1fr)_8.25rem_11.25rem] dark:border-slate-800 dark:bg-slate-800 dark:text-slate-300" role="row">
+          <span class="px-3 py-3.5 md:px-3.5" role="columnheader">Rank</span>
+          <span class="px-3 py-3.5 md:px-3.5" role="columnheader">Repository</span>
+          <span class="hidden px-3 py-3.5 md:block md:px-3.5" role="columnheader">Stars</span>
+          <span class="hidden px-3 py-3.5 md:block md:px-3.5" role="columnheader">Language</span>
         </div>
         <div
-          class="virtual-ranking__viewport"
+          class="relative h-[720px] max-h-[72vh] min-h-[440px] overflow-auto"
           data-virtual-viewport
           role="rowgroup"
           tabindex="0"
           aria-label={`${caption} scrollable list`}
         >
-          <div class="virtual-ranking__empty" data-virtual-empty hidden>No matching repositories.</div>
-          <div class="virtual-ranking__spacer" data-virtual-spacer>
-            <div class="virtual-ranking__rows" data-virtual-rows />
+          <div class="p-7 text-slate-500 dark:text-slate-400" data-virtual-empty hidden>No matching repositories.</div>
+          <div class="relative w-full" data-virtual-spacer>
+            <div class="absolute inset-x-0 top-0" data-virtual-rows />
           </div>
         </div>
       </div>
       <script is:inline id={dataId} type="application/json" set:html={JSON.stringify(entries)} />
     </section>
   ) : (
-    <section class="empty-state" aria-live="polite">
-      <h2>{emptyTitle}</h2>
-      <p>{emptyMessage}</p>
+    <section class="rounded-lg border border-violet-200 bg-violet-50 p-6 dark:border-violet-800 dark:bg-violet-950" aria-live="polite">
+      <h2 class="mb-2 mt-0 text-xl font-bold">{emptyTitle}</h2>
+      <p class="m-0 text-slate-500 dark:text-slate-400">{emptyMessage}</p>
     </section>
   )
 }
@@ -101,6 +101,29 @@ const statusId = `${dataId}-status`;
 
   const starFormatter = new Intl.NumberFormat("en-US");
   const countFormatter = new Intl.NumberFormat("en-US");
+  const rankCellClass = "px-3 py-4 font-bold tabular-nums text-slate-500 md:px-3.5 dark:text-slate-400";
+  const starCellClass = "hidden px-3 py-4 font-bold tabular-nums md:block md:px-3.5";
+  const repoCellClass = "relative grid min-w-0 gap-1.5 px-3 py-4 md:px-3.5";
+  const repoLinkClass =
+    "line-clamp-1 font-bold text-sky-800 [overflow-wrap:anywhere] underline decoration-1 underline-offset-3 dark:text-sky-300";
+  const repoDescriptionClass = "line-clamp-2 text-sm text-slate-500 [overflow-wrap:anywhere] dark:text-slate-400";
+  const mobileMetricsClass = "flex flex-wrap items-center gap-2 md:hidden";
+  const mobileStarsClass =
+    "inline-flex items-center rounded-md bg-slate-950 px-2.5 py-1 text-sm font-extrabold tabular-nums text-white dark:bg-slate-100 dark:text-slate-950";
+  const mobileLanguageClass =
+    "inline-flex items-center rounded-full bg-cyan-700 px-2.5 py-1 text-sm font-extrabold text-white dark:bg-cyan-300 dark:text-slate-950";
+  const tagsClass = "group relative isolate mt-1 flex min-w-0 max-w-full flex-nowrap gap-1.5 outline-none";
+  const tagClass =
+    "inline-block max-w-[7.25rem] flex-[0_1_auto] overflow-hidden text-ellipsis whitespace-nowrap rounded-full border border-sky-200 bg-sky-50 px-2 py-0.5 text-xs font-bold leading-snug text-sky-800 dark:border-sky-800 dark:bg-sky-950 dark:text-sky-200";
+  const moreTagClass =
+    "inline-block flex-none overflow-hidden whitespace-nowrap rounded-full border border-slate-200 bg-slate-100 px-2 py-0.5 text-xs font-bold leading-snug text-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400";
+  const tagPopupClass =
+    "absolute left-0 top-[calc(100%+0.5rem)] z-[100] hidden max-h-44 w-[min(22rem,72vw)] overflow-auto rounded-lg border border-slate-200 bg-white bg-clip-padding p-3 text-sm leading-snug text-slate-950 opacity-100 shadow-[0_18px_48px_rgb(15_23_42_/_0.22),0_0_0_1px_#fff] group-hover:block group-focus:block group-focus-within:block dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:shadow-[0_18px_48px_rgb(0_0_0_/_0.45),0_0_0_1px_rgb(15_23_42)]";
+  const tagPopupTextClass = "text-slate-500 [overflow-wrap:anywhere] dark:text-slate-400";
+  const languagePillClass =
+    "hidden max-w-[180px] items-center justify-self-start rounded-full bg-cyan-50 px-2.5 py-1 text-sm font-bold text-cyan-800 md:mx-3.5 md:my-2.5 md:inline-flex dark:bg-cyan-950 dark:text-cyan-200";
+  const rowClass =
+    "absolute grid min-h-[184px] w-full grid-cols-[4.25rem_minmax(0,1fr)] items-start overflow-visible border-b border-slate-200 bg-white hover:z-20 focus-within:z-20 md:min-h-[136px] md:grid-cols-[4.5rem_minmax(18rem,1fr)_8.25rem_11.25rem] dark:border-slate-800 dark:bg-slate-900";
 
   function normalizeSearchText(value: string | null | undefined): string {
     return value?.toLocaleLowerCase().trim() ?? "";
@@ -135,24 +158,37 @@ const statusId = `${dataId}-status`;
   function createRepositoryCell(entry: Entry) {
     const cell = document.createElement("span");
     cell.setAttribute("role", "cell");
-    cell.className = "repo-cell";
+    cell.className = repoCellClass;
 
     const link = document.createElement("a");
-    link.className = "repo-link";
+    link.className = repoLinkClass;
     link.href = entry.htmlUrl;
     link.rel = "noreferrer";
     link.target = "_blank";
     link.textContent = entry.fullName;
 
     const description = document.createElement("span");
-    description.className = "repo-description";
+    description.className = repoDescriptionClass;
     description.textContent = entry.description ?? "No description available.";
     description.title = description.textContent;
+
+    const mobileMetrics = document.createElement("span");
+    mobileMetrics.className = mobileMetricsClass;
+
+    const mobileStars = document.createElement("span");
+    mobileStars.className = mobileStarsClass;
+    mobileStars.textContent = `${starFormatter.format(entry.stars)} stars`;
+
+    const mobileLanguage = document.createElement("span");
+    mobileLanguage.className = mobileLanguageClass;
+    mobileLanguage.textContent = entry.primaryLanguage ?? "Unknown";
+
+    mobileMetrics.append(mobileStars, mobileLanguage);
 
     const tags = document.createElement("span");
     const topics = entry.topics ?? [];
     const visibleTopics = topics.slice(0, 3);
-    tags.className = "repo-tags";
+    tags.className = tagsClass;
 
     if (visibleTopics.length > 0) {
       const topicList = topics.join(", ");
@@ -161,7 +197,7 @@ const statusId = `${dataId}-status`;
       tags.append(
         ...visibleTopics.map((topic) => {
           const tag = document.createElement("span");
-          tag.className = "repo-tag";
+          tag.className = tagClass;
           tag.textContent = topic;
           tag.title = topic;
           return tag;
@@ -170,26 +206,27 @@ const statusId = `${dataId}-status`;
 
       if (topics.length > visibleTopics.length) {
         const moreTag = document.createElement("span");
-        moreTag.className = "repo-tag repo-tag--more";
+        moreTag.className = moreTagClass;
         moreTag.textContent = `+${topics.length - visibleTopics.length}`;
         tags.append(moreTag);
       }
 
       const popup = document.createElement("span");
-      popup.className = "repo-tags__popup";
+      popup.className = tagPopupClass;
       popup.setAttribute("role", "tooltip");
 
       const title = document.createElement("strong");
       title.textContent = "Topics";
 
       const list = document.createElement("span");
+      list.className = tagPopupTextClass;
       list.textContent = topicList;
 
       popup.append(title, list);
       tags.append(popup);
     }
 
-    cell.append(link, description, tags);
+    cell.append(link, mobileMetrics, description, tags);
     return cell;
   }
 
@@ -199,7 +236,7 @@ const statusId = `${dataId}-status`;
     const viewport = root.querySelector<HTMLElement>("[data-virtual-viewport]");
     const spacer = root.querySelector<HTMLElement>("[data-virtual-spacer]");
     const rows = root.querySelector<HTMLElement>("[data-virtual-rows]");
-    const table = root.querySelector<HTMLElement>(".virtual-ranking__table");
+    const table = root.querySelector<HTMLElement>("[data-virtual-table]");
     const filter = root.querySelector<HTMLInputElement>("[data-virtual-filter]");
     const clear = root.querySelector<HTMLButtonElement>("[data-virtual-clear]");
     const count = root.querySelector<HTMLElement>("[data-virtual-count]");
@@ -241,6 +278,10 @@ const statusId = `${dataId}-status`;
     viewportElement.style.maxHeight = "72vh";
     viewportElement.style.minHeight = "440px";
     let virtualizer: Virtualizer<HTMLElement, HTMLElement>;
+
+    function getEstimatedRowSize() {
+      return window.matchMedia("(max-width: 767px)").matches ? 184 : 136;
+    }
 
     function repositoryCountText(count: number) {
       return `${countFormatter.format(count)} ${count === 1 ? "repository" : "repositories"}`;
@@ -300,6 +341,7 @@ const statusId = `${dataId}-status`;
           Math.min(viewportElement.clientHeight || 720, Math.round(window.innerHeight * 0.72), 720),
         );
         callback({ width: viewportElement.clientWidth, height: viewportHeight });
+        virtualizer.measure();
       };
       const observer = new ResizeObserver(update);
 
@@ -316,7 +358,7 @@ const statusId = `${dataId}-status`;
     virtualizer = new Virtualizer<HTMLElement, HTMLElement>({
       count: entries.length,
       getScrollElement: () => viewportElement,
-      estimateSize: () => 136,
+      estimateSize: getEstimatedRowSize,
       overscan: 12,
       getItemKey: (index) => filteredEntries[index]?.id ?? index,
       scrollToFn: elementScroll,
@@ -338,21 +380,22 @@ const statusId = `${dataId}-status`;
             return row;
           }
 
-          row.className = "virtual-ranking__row";
+          row.className = rowClass;
           row.setAttribute("role", "row");
           row.setAttribute("aria-rowindex", String(virtualItem.index + 2));
           row.setAttribute("data-index", String(virtualItem.index));
+          row.setAttribute("data-virtual-row", "");
           row.style.transform = `translateY(${virtualItem.start}px)`;
 
           const language = document.createElement("span");
           language.setAttribute("role", "cell");
-          language.className = "language-pill";
+          language.className = languagePillClass;
           language.textContent = entry.primaryLanguage ?? "Unknown";
 
           row.append(
-            createCell(`#${entry.rank}`, "rank-cell"),
+            createCell(`#${entry.rank}`, rankCellClass),
             createRepositoryCell(entry),
-            createCell(starFormatter.format(entry.stars), "star-cell"),
+            createCell(starFormatter.format(entry.stars), starCellClass),
             language,
           );
           return row;

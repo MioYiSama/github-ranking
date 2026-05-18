@@ -14,15 +14,15 @@ const { caption, entries, emptyTitle, emptyMessage } = Astro.props;
 
 {
   entries.length > 0 ? (
-    <div class="ranking-table-wrap">
-      <table class="ranking-table">
-        <caption>{caption}</caption>
+    <div class="overflow-x-auto rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+      <table class="w-full min-w-[760px] border-collapse">
+        <caption class="p-4 text-left text-[1.05rem] font-bold">{caption}</caption>
         <thead>
           <tr>
-            <th scope="col">Rank</th>
-            <th scope="col">Repository</th>
-            <th scope="col">Stars</th>
-            <th scope="col">Language</th>
+            <th class="border-t border-slate-200 bg-slate-100 p-3.5 text-left align-top text-xs font-bold uppercase tracking-normal text-slate-700 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-300" scope="col">Rank</th>
+            <th class="border-t border-slate-200 bg-slate-100 p-3.5 text-left align-top text-xs font-bold uppercase tracking-normal text-slate-700 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-300" scope="col">Repository</th>
+            <th class="border-t border-slate-200 bg-slate-100 p-3.5 text-left align-top text-xs font-bold uppercase tracking-normal text-slate-700 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-300" scope="col">Stars</th>
+            <th class="border-t border-slate-200 bg-slate-100 p-3.5 text-left align-top text-xs font-bold uppercase tracking-normal text-slate-700 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-300" scope="col">Language</th>
           </tr>
         </thead>
         <tbody>
@@ -33,10 +33,9 @@ const { caption, entries, emptyTitle, emptyMessage } = Astro.props;
       </table>
     </div>
   ) : (
-    <section class="empty-state" aria-live="polite">
-      <h2>{emptyTitle}</h2>
-      <p>{emptyMessage}</p>
+    <section class="rounded-lg border border-violet-200 bg-violet-50 p-6 dark:border-violet-800 dark:bg-violet-950" aria-live="polite">
+      <h2 class="mb-2 mt-0 text-xl font-bold">{emptyTitle}</h2>
+      <p class="m-0 text-slate-500 dark:text-slate-400">{emptyMessage}</p>
     </section>
   )
 }
-

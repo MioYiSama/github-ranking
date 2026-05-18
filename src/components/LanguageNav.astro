@@ -8,13 +8,17 @@ interface Props {
 
 const { currentSlug } = Astro.props;
 const languages = getEnabledLanguages();
+const linkClass =
+  "flex-none rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-950 no-underline dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100";
+const activeClass =
+  "border-teal-600 bg-teal-50 font-bold text-teal-800 dark:border-teal-400 dark:bg-teal-950 dark:text-teal-200";
 ---
 
-<nav class="language-nav" aria-label="Repository ranking languages">
-  <a href={withBasePath("/")} aria-current={currentSlug ? undefined : "page"}>Overall</a>
+<nav class="flex gap-2 overflow-x-auto pb-0.5" aria-label="Repository ranking languages">
+  <a class:list={[linkClass, !currentSlug && activeClass]} href={withBasePath("/")} aria-current={currentSlug ? undefined : "page"}>Overall</a>
   {
     languages.map((language) => (
-      <a href={withBasePath(`/languages/${language.slug}/`)} aria-current={currentSlug === language.slug ? "page" : undefined}>
+      <a class:list={[linkClass, currentSlug === language.slug && activeClass]} href={withBasePath(`/languages/${language.slug}/`)} aria-current={currentSlug === language.slug ? "page" : undefined}>
         {language.displayName}
       </a>
     ))

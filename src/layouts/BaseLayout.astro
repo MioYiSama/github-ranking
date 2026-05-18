@@ -26,26 +26,26 @@ const faviconPath = withBasePath("/favicon.svg");
     <link rel="icon" href={faviconPath} type="image/svg+xml" />
     <title>{title}</title>
   </head>
-  <body>
-    <div class="site-shell">
-      <header class="site-header">
-        <div class="site-header__inner">
-          <div class="brand-row">
-            <a class="brand" href={homePath} aria-label="GitHub repository star rankings overall page">
-              <img src={faviconPath} alt="" width="38" height="38" />
-              <span class="brand__text">
-                <span class="brand__name">GitHub Star Rankings</span>
-                <span class="brand__meta">Public repository snapshots</span>
+  <body class="min-w-80 bg-slate-50 text-slate-950 antialiased dark:bg-slate-950 dark:text-slate-100">
+    <div class="min-h-screen">
+      <header class="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+        <div class="mx-auto grid w-full max-w-[1180px] gap-[18px] px-4 py-[22px] pb-[18px] max-[720px]:px-2.5">
+          <div class="flex items-center justify-start gap-4">
+            <a class="inline-flex flex-none items-center gap-3 text-inherit no-underline" href={homePath} aria-label="GitHub repository star rankings overall page">
+              <img class="size-[38px]" src={faviconPath} alt="" width="38" height="38" />
+              <span class="grid gap-0.5">
+                <span class="text-[1.12rem] font-bold">GitHub Star Rankings</span>
+                <span class="text-sm text-slate-500 dark:text-slate-400">Public repository snapshots</span>
               </span>
             </a>
           </div>
           <LanguageNav currentSlug={currentSlug} />
         </div>
       </header>
-      <main class="page-main">
-        <section class="page-title" aria-labelledby="page-title">
-          <h1 id="page-title">{title}</h1>
-          <p>{description}</p>
+      <main class="mx-auto grid w-full max-w-[1180px] gap-[18px] px-4 py-7 pb-14 max-[720px]:px-2.5">
+        <section class="grid gap-2" aria-labelledby="page-title">
+          <h1 id="page-title" class="m-0 text-[2.55rem] font-normal leading-[0.96] tracking-normal text-slate-950 sm:text-5xl lg:text-[4.2rem] dark:text-slate-100">{title}</h1>
+          <p class="m-0 max-w-[760px] text-base text-slate-500 dark:text-slate-400">{description}</p>
         </section>
         <SnapshotStatus snapshot={snapshot} />
         <slot />

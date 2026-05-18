@@ -16,25 +16,25 @@ const topicList = topics.join(", ");
 ---
 
 <tr>
-  <td class="rank-cell">#{entry.rank}</td>
-  <td class="repo-cell">
-    <a class="repo-link" href={entry.htmlUrl} rel="noreferrer" target="_blank">{entry.fullName}</a>
-    <p class="repo-description" title={description}>{description}</p>
+  <td class="w-[72px] border-t border-slate-200 p-3.5 align-top font-bold tabular-nums text-slate-500 dark:border-slate-800 dark:text-slate-400">#{entry.rank}</td>
+  <td class="relative min-w-[290px] border-t border-slate-200 p-3.5 align-top dark:border-slate-800">
+    <a class="font-bold text-sky-800 underline decoration-1 underline-offset-3 dark:text-sky-300" href={entry.htmlUrl} rel="noreferrer" target="_blank">{entry.fullName}</a>
+    <p class="m-0 mt-1 text-sm text-slate-500 [overflow-wrap:anywhere] dark:text-slate-400" title={description}>{description}</p>
     {
       visibleTopics.length > 0 && (
-        <div class="repo-tags" tabindex="0" aria-label={`${entry.fullName} topics: ${topicList}`}>
+        <div class="group relative isolate mt-2 flex max-w-full flex-wrap gap-1.5 outline-none" tabindex="0" aria-label={`${entry.fullName} topics: ${topicList}`}>
           {visibleTopics.map((topic) => (
-            <span class="repo-tag" title={topic}>{topic}</span>
+            <span class="inline-block max-w-[138px] overflow-hidden text-ellipsis whitespace-nowrap rounded-full border border-sky-200 bg-sky-50 px-2 py-0.5 text-xs font-bold leading-snug text-sky-800 dark:border-sky-800 dark:bg-sky-950 dark:text-sky-200" title={topic}>{topic}</span>
           ))}
-          {hiddenTopicCount > 0 && <span class="repo-tag repo-tag--more">+{hiddenTopicCount}</span>}
-          <div class="repo-tags__popup" role="tooltip">
+          {hiddenTopicCount > 0 && <span class="inline-block overflow-hidden whitespace-nowrap rounded-full border border-slate-200 bg-slate-100 px-2 py-0.5 text-xs font-bold leading-snug text-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400">+{hiddenTopicCount}</span>}
+          <div class="absolute left-0 top-[calc(100%+0.5rem)] z-[100] hidden max-h-44 w-[min(22rem,72vw)] overflow-auto rounded-lg border border-slate-200 bg-white bg-clip-padding p-3 text-sm leading-snug text-slate-950 opacity-100 shadow-[0_18px_48px_rgb(15_23_42_/_0.22),0_0_0_1px_#fff] group-hover:block group-focus:block group-focus-within:block dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:shadow-[0_18px_48px_rgb(0_0_0_/_0.45),0_0_0_1px_rgb(15_23_42)]" role="tooltip">
             <strong>Topics</strong>
-            <span>{topicList}</span>
+            <span class="text-slate-500 [overflow-wrap:anywhere] dark:text-slate-400">{topicList}</span>
           </div>
         </div>
       )
     }
   </td>
-  <td class="star-cell" aria-label={`${stars} stars`}>{stars}</td>
-  <td><span class="language-pill">{language}</span></td>
+  <td class="w-[132px] whitespace-nowrap border-t border-slate-200 p-3.5 align-top font-bold tabular-nums dark:border-slate-800" aria-label={`${stars} stars`}>{stars}</td>
+  <td class="border-t border-slate-200 p-3.5 align-top dark:border-slate-800"><span class="inline-flex max-w-[180px] items-center rounded-full bg-cyan-50 px-2.5 py-1 text-sm font-bold text-cyan-800 dark:bg-cyan-950 dark:text-cyan-200">{language}</span></td>
 </tr>

@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 test("stale snapshot messaging", async ({ page }) => {
   await page.goto("/");
   await page.addStyleTag({ path: "tests/visual/screenshot.css" });
-  await page.locator(".snapshot-status").evaluate((element) => {
+  await page.locator("[data-snapshot-status]").evaluate((element) => {
     element.setAttribute("data-state", "stale");
     const strong = element.querySelector("strong");
     const detail = element.querySelector("span");
@@ -18,5 +18,7 @@ test("stale snapshot messaging", async ({ page }) => {
     }
   });
   await expect(page.getByText("Stale snapshot")).toBeVisible();
-  await expect(page.locator(".snapshot-status")).toHaveScreenshot("stale-snapshot-status.png");
+  await expect(page.locator("[data-snapshot-status]")).toHaveScreenshot(
+    "stale-snapshot-status.png",
+  );
 });
