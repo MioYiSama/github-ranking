@@ -112,14 +112,16 @@ const statusId = `${dataId}-status`;
     "inline-flex items-center rounded-md bg-slate-950 px-2.5 py-1 text-sm font-extrabold tabular-nums text-white dark:bg-slate-100 dark:text-slate-950";
   const mobileLanguageClass =
     "inline-flex items-center rounded-full bg-cyan-700 px-2.5 py-1 text-sm font-extrabold text-white dark:bg-cyan-300 dark:text-slate-950";
-  const tagsClass = "group relative isolate mt-1 flex min-w-0 max-w-full flex-nowrap gap-1.5 outline-none";
+  const tagsClass = "relative isolate mt-1 flex min-w-0 max-w-full flex-nowrap gap-1.5";
   const tagClass =
     "inline-block max-w-[7.25rem] flex-[0_1_auto] overflow-hidden text-ellipsis whitespace-nowrap rounded-full border border-sky-200 bg-sky-50 px-2 py-0.5 text-xs font-bold leading-snug text-sky-800 dark:border-sky-800 dark:bg-sky-950 dark:text-sky-200";
   const moreTagClass =
-    "inline-block flex-none overflow-hidden whitespace-nowrap rounded-full border border-slate-200 bg-slate-100 px-2 py-0.5 text-xs font-bold leading-snug text-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400";
+    "peer inline-block flex-none overflow-hidden whitespace-nowrap rounded-full border border-slate-200 bg-slate-100 px-2 py-0.5 text-xs font-bold leading-snug text-slate-500 outline-none focus-visible:ring-2 focus-visible:ring-slate-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400";
   const tagPopupClass =
-    "absolute left-0 top-[calc(100%+0.5rem)] z-[100] hidden max-h-44 w-[min(22rem,72vw)] overflow-auto rounded-lg border border-slate-200 bg-white bg-clip-padding p-3 text-sm leading-snug text-slate-950 opacity-100 shadow-[0_18px_48px_rgb(15_23_42_/_0.22),0_0_0_1px_#fff] group-hover:block group-focus:block group-focus-within:block dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:shadow-[0_18px_48px_rgb(0_0_0_/_0.45),0_0_0_1px_rgb(15_23_42)]";
-  const tagPopupTextClass = "text-slate-500 [overflow-wrap:anywhere] dark:text-slate-400";
+    "absolute left-0 top-[calc(100%+0.5rem)] z-[100] hidden max-h-44 w-[min(22rem,72vw)] overflow-auto rounded-lg border border-slate-200 bg-white bg-clip-padding p-3 text-sm leading-snug text-slate-950 opacity-100 shadow-[0_18px_48px_rgb(15_23_42_/_0.22),0_0_0_1px_#fff] peer-hover:block peer-focus:block dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:shadow-[0_18px_48px_rgb(0_0_0_/_0.45),0_0_0_1px_rgb(15_23_42)]";
+  const tagPopupListClass = "flex flex-wrap gap-1.5";
+  const tagPopupBadgeClass =
+    "inline-block max-w-full overflow-hidden text-ellipsis whitespace-nowrap rounded-full border border-sky-200 bg-sky-50 px-2 py-0.5 text-xs font-bold leading-snug text-sky-800 dark:border-sky-800 dark:bg-sky-950 dark:text-sky-200";
   const languagePillClass =
     "hidden max-w-[180px] items-center justify-self-start rounded-full bg-cyan-50 px-2.5 py-1 text-sm font-bold text-cyan-800 md:mx-3.5 md:my-2.5 md:inline-flex dark:bg-cyan-950 dark:text-cyan-200";
   const rowClass =
@@ -188,11 +190,13 @@ const statusId = `${dataId}-status`;
     const tags = document.createElement("span");
     const topics = entry.topics ?? [];
     const visibleTopics = topics.slice(0, 3);
+    const hiddenTopics = topics.slice(visibleTopics.length);
     tags.className = tagsClass;
 
     if (visibleTopics.length > 0) {
       const topicList = topics.join(", ");
-      tags.tabIndex = 0;
+      const popupId = `topics-${entry.id}-popup`;
+      const hasHiddenTopics = hiddenTopics.length > 0;
       tags.setAttribute("aria-label", `${entry.fullName} topics: ${topicList}`);
       tags.append(
         ...visibleTopics.map((topic) => {
@@ -200,30 +204,44 @@ const statusId = `${dataId}-status`;
           tag.className = tagClass;
           tag.textContent = topic;
           tag.title = topic;
+
           return tag;
         }),
       );
 
-      if (topics.length > visibleTopics.length) {
+      if (hasHiddenTopics) {
         const moreTag = document.createElement("span");
         moreTag.className = moreTagClass;
-        moreTag.textContent = `+${topics.length - visibleTopics.length}`;
+        moreTag.textContent = `+${hiddenTopics.length}`;
+        moreTag.title = `${hiddenTopics.length} more topics`;
+        moreTag.tabIndex = 0;
+        moreTag.setAttribute("aria-describedby", popupId);
         tags.append(moreTag);
+
+        const popup = document.createElement("span");
+        popup.id = popupId;
+        popup.className = tagPopupClass;
+        popup.setAttribute("role", "tooltip");
+
+        const title = document.createElement("strong");
+        title.className = "sr-only";
+        title.textContent = "Topics";
+
+        const list = document.createElement("span");
+        list.className = tagPopupListClass;
+        list.append(
+          ...hiddenTopics.map((topic) => {
+            const tag = document.createElement("span");
+            tag.className = tagPopupBadgeClass;
+            tag.textContent = topic;
+            tag.title = topic;
+            return tag;
+          }),
+        );
+
+        popup.append(title, list);
+        tags.append(popup);
       }
-
-      const popup = document.createElement("span");
-      popup.className = tagPopupClass;
-      popup.setAttribute("role", "tooltip");
-
-      const title = document.createElement("strong");
-      title.textContent = "Topics";
-
-      const list = document.createElement("span");
-      list.className = tagPopupTextClass;
-      list.textContent = topicList;
-
-      popup.append(title, list);
-      tags.append(popup);
     }
 
     cell.append(link, mobileMetrics, description, tags);

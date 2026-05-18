@@ -11,8 +11,16 @@ const language = entry.primaryLanguage ?? "Unknown";
 const description = entry.description ?? "No description available.";
 const topics = entry.topics ?? [];
 const visibleTopics = topics.slice(0, 3);
-const hiddenTopicCount = Math.max(topics.length - visibleTopics.length, 0);
+const hiddenTopics = topics.slice(visibleTopics.length);
+const hiddenTopicCount = hiddenTopics.length;
 const topicList = topics.join(", ");
+const topicPopupId = `topics-${entry.id}-popup`;
+const topicBadgeClass =
+  "inline-block max-w-[138px] overflow-hidden text-ellipsis whitespace-nowrap rounded-full border border-sky-200 bg-sky-50 px-2 py-0.5 text-xs font-bold leading-snug text-sky-800 dark:border-sky-800 dark:bg-sky-950 dark:text-sky-200";
+const moreTopicBadgeClass =
+  "peer inline-block overflow-hidden whitespace-nowrap rounded-full border border-slate-200 bg-slate-100 px-2 py-0.5 text-xs font-bold leading-snug text-slate-500 outline-none focus-visible:ring-2 focus-visible:ring-slate-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400";
+const popupTopicBadgeClass =
+  "inline-block max-w-full overflow-hidden text-ellipsis whitespace-nowrap rounded-full border border-sky-200 bg-sky-50 px-2 py-0.5 text-xs font-bold leading-snug text-sky-800 dark:border-sky-800 dark:bg-sky-950 dark:text-sky-200";
 ---
 
 <tr>
@@ -22,15 +30,25 @@ const topicList = topics.join(", ");
     <p class="m-0 mt-1 text-sm text-slate-500 [overflow-wrap:anywhere] dark:text-slate-400" title={description}>{description}</p>
     {
       visibleTopics.length > 0 && (
-        <div class="group relative isolate mt-2 flex max-w-full flex-wrap gap-1.5 outline-none" tabindex="0" aria-label={`${entry.fullName} topics: ${topicList}`}>
+        <div class="relative isolate mt-2 flex max-w-full flex-wrap gap-1.5" aria-label={`${entry.fullName} topics: ${topicList}`}>
           {visibleTopics.map((topic) => (
-            <span class="inline-block max-w-[138px] overflow-hidden text-ellipsis whitespace-nowrap rounded-full border border-sky-200 bg-sky-50 px-2 py-0.5 text-xs font-bold leading-snug text-sky-800 dark:border-sky-800 dark:bg-sky-950 dark:text-sky-200" title={topic}>{topic}</span>
+            <span class={topicBadgeClass} title={topic}>{topic}</span>
           ))}
-          {hiddenTopicCount > 0 && <span class="inline-block overflow-hidden whitespace-nowrap rounded-full border border-slate-200 bg-slate-100 px-2 py-0.5 text-xs font-bold leading-snug text-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400">+{hiddenTopicCount}</span>}
-          <div class="absolute left-0 top-[calc(100%+0.5rem)] z-[100] hidden max-h-44 w-[min(22rem,72vw)] overflow-auto rounded-lg border border-slate-200 bg-white bg-clip-padding p-3 text-sm leading-snug text-slate-950 opacity-100 shadow-[0_18px_48px_rgb(15_23_42_/_0.22),0_0_0_1px_#fff] group-hover:block group-focus:block group-focus-within:block dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:shadow-[0_18px_48px_rgb(0_0_0_/_0.45),0_0_0_1px_rgb(15_23_42)]" role="tooltip">
-            <strong>Topics</strong>
-            <span class="text-slate-500 [overflow-wrap:anywhere] dark:text-slate-400">{topicList}</span>
-          </div>
+          {hiddenTopicCount > 0 && (
+            <>
+              <span class={moreTopicBadgeClass} title={`${hiddenTopicCount} more topics`} tabindex="0" aria-describedby={topicPopupId}>
+                +{hiddenTopicCount}
+              </span>
+              <div id={topicPopupId} class="absolute left-0 top-[calc(100%+0.5rem)] z-[100] hidden max-h-44 w-[min(22rem,72vw)] overflow-auto rounded-lg border border-slate-200 bg-white bg-clip-padding p-3 text-sm leading-snug text-slate-950 opacity-100 shadow-[0_18px_48px_rgb(15_23_42_/_0.22),0_0_0_1px_#fff] peer-hover:block peer-focus:block dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:shadow-[0_18px_48px_rgb(0_0_0_/_0.45),0_0_0_1px_rgb(15_23_42)]" role="tooltip">
+                <strong class="sr-only">Topics</strong>
+                <span class="flex flex-wrap gap-1.5">
+                  {hiddenTopics.map((topic) => (
+                    <span class={popupTopicBadgeClass} title={topic}>{topic}</span>
+                  ))}
+                </span>
+              </div>
+            </>
+          )}
         </div>
       )
     }
