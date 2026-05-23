@@ -81,6 +81,7 @@ const statusId = `${dataId}-status`;
 <script>
   import Fuse from "fuse.js";
   import {
+    type VirtualItem,
     Virtualizer,
     elementScroll,
     observeElementOffset,
@@ -97,6 +98,12 @@ const statusId = `${dataId}-status`;
     topics?: string[];
     stars: number;
     primaryLanguage: string | null;
+  }
+
+  interface SavedVirtualRankingState {
+    filter: string;
+    offset: number;
+    snapshot: VirtualItem[];
   }
 
   const starFormatter = new Intl.NumberFormat("en-US");
@@ -143,6 +150,70 @@ const statusId = `${dataId}-status`;
       .map(normalizeSearchText)
       .filter(Boolean)
       .join(" ");
+  }
+
+  function isVirtualItem(value: unknown): value is VirtualItem {
+    if (!value || typeof value !== "object") {
+      return false;
+    }
+
+    const item = value as Record<string, unknown>;
+    const keyType = typeof item.key;
+
+    return (
+      typeof item.index === "number" &&
+      Number.isInteger(item.index) &&
+      item.index >= 0 &&
+      (keyType === "number" || keyType === "string") &&
+      typeof item.start === "number" &&
+      Number.isFinite(item.start) &&
+      typeof item.end === "number" &&
+      Number.isFinite(item.end) &&
+      typeof item.size === "number" &&
+      Number.isFinite(item.size) &&
+      typeof item.lane === "number" &&
+      Number.isInteger(item.lane)
+    );
+  }
+
+  function createEntriesStateKey(entries: Entry[]) {
+    const leadingIds = entries.slice(0, 24).map((entry) => entry.id).join(".");
+    const trailingEntry = entries[entries.length - 1];
+    return `${entries.length}:${leadingIds}:${trailingEntry?.id ?? "none"}`;
+  }
+
+  function createVirtualRankingStorageKey(entries: Entry[]) {
+    return `github-ranking:virtual-ranking:${location.pathname}:${createEntriesStateKey(entries)}`;
+  }
+
+  function readSavedVirtualRankingState(storageKey: string): SavedVirtualRankingState | null {
+    try {
+      const rawState = sessionStorage.getItem(storageKey);
+      if (!rawState) {
+        return null;
+      }
+
+      const state = JSON.parse(rawState) as Partial<SavedVirtualRankingState>;
+      if (typeof state.filter !== "string" || typeof state.offset !== "number" || !Number.isFinite(state.offset)) {
+        return null;
+      }
+
+      return {
+        filter: state.filter,
+        offset: Math.max(0, state.offset),
+        snapshot: Array.isArray(state.snapshot) ? state.snapshot.filter(isVirtualItem) : [],
+      };
+    } catch {
+      return null;
+    }
+  }
+
+  function writeSavedVirtualRankingState(storageKey: string, state: SavedVirtualRankingState) {
+    try {
+      sessionStorage.setItem(storageKey, JSON.stringify(state));
+    } catch {
+      // Ignore storage failures so private browsing modes still render normally.
+    }
   }
 
   function createCell(text: string, className?: string) {
@@ -273,7 +344,6 @@ const statusId = `${dataId}-status`;
       entry,
       searchText: createSearchText(entry),
     }));
-    let filteredEntries = entries;
     const viewportElement = viewport;
     const spacerElement = spacer;
     const rowsElement = rows;
@@ -295,10 +365,17 @@ const statusId = `${dataId}-status`;
         { name: "primaryLanguage", weight: 0.04 },
       ],
     });
+    const storageKey = createVirtualRankingStorageKey(entries);
+    const savedState = readSavedVirtualRankingState(storageKey);
+    const restoredFilter = normalizeSearchText(savedState?.filter);
+    const restoredOffset = savedState?.offset ?? 0;
+    let filteredEntries = filterEntries(restoredFilter);
     viewportElement.style.height = "720px";
     viewportElement.style.maxHeight = "72vh";
     viewportElement.style.minHeight = "440px";
+    filterElement.value = savedState?.filter ?? "";
     let virtualizer: Virtualizer<HTMLElement, HTMLElement>;
+    let renderFrame: number | null = null;
 
     function getEstimatedRowSize() {
       return window.matchMedia("(max-width: 767px)").matches ? 184 : 136;
@@ -322,6 +399,25 @@ const statusId = `${dataId}-status`;
       statusElement.textContent = `Showing ${repositoryCountText(filteredEntries.length)} of ${repositoryCountText(entries.length)}`;
     }
 
+    function filterEntries(query: string) {
+      const normalizedQuery = normalizeSearchText(query);
+
+      if (!normalizedQuery) {
+        return entries;
+      }
+
+      const directMatches = searchableEntries
+        .filter((item) => item.searchText.includes(normalizedQuery))
+        .map((item) => item.entry);
+
+      if (directMatches.length > 0 || normalizedQuery.length < 4) {
+        return directMatches;
+      }
+
+      const matchedIds = new Set(fuse.search(normalizedQuery).map((match) => match.item.id));
+      return entries.filter((entry) => matchedIds.has(entry.id));
+    }
+
     function updateVirtualizerOptions() {
       virtualizer.setOptions({
         ...virtualizer.options,
@@ -330,29 +426,35 @@ const statusId = `${dataId}-status`;
       });
     }
 
-    function applyFilter(query: string) {
-      const normalizedQuery = normalizeSearchText(query);
+    function persistVirtualState() {
+      writeSavedVirtualRankingState(storageKey, {
+        filter: filterElement.value,
+        offset: viewportElement.scrollTop,
+        snapshot: virtualizer.takeSnapshot(),
+      });
+    }
 
-      if (!normalizedQuery) {
-        filteredEntries = entries;
-      } else {
-        const directMatches = searchableEntries
-          .filter((item) => item.searchText.includes(normalizedQuery))
-          .map((item) => item.entry);
-
-        if (directMatches.length > 0 || normalizedQuery.length < 4) {
-          filteredEntries = directMatches;
-        } else {
-          const matchedIds = new Set(fuse.search(normalizedQuery).map((match) => match.item.id));
-          filteredEntries = entries.filter((entry) => matchedIds.has(entry.id));
-        }
+    function scheduleRender() {
+      if (renderFrame !== null) {
+        return;
       }
 
+      renderFrame = window.requestAnimationFrame(() => {
+        renderFrame = null;
+        render();
+      });
+    }
+
+    function applyFilter(query: string) {
+      const normalizedQuery = normalizeSearchText(query);
+      filteredEntries = filterEntries(normalizedQuery);
+
       updateVirtualizerOptions();
-      viewportElement.scrollTop = 0;
+      virtualizer.scrollToOffset(0);
       virtualizer.measure();
       updateSummary(normalizedQuery);
       render();
+      persistVirtualState();
     }
 
     function observeViewportRect(_instance: Virtualizer<HTMLElement, HTMLElement>, callback: (rect: { width: number; height: number }) => void) {
@@ -385,22 +487,25 @@ const statusId = `${dataId}-status`;
       scrollToFn: elementScroll,
       observeElementRect: observeViewportRect,
       observeElementOffset,
-      onChange: () => render(),
+      initialMeasurementsCache: savedState?.snapshot ?? [],
+      initialOffset: restoredOffset,
+      onChange: () => scheduleRender(),
     });
 
     function render() {
       virtualizer._willUpdate();
       const virtualItems = virtualizer.getVirtualItems();
       spacerElement.style.height = `${virtualizer.getTotalSize()}px`;
+      const renderedRows: HTMLElement[] = [];
       rowsElement.replaceChildren(
-        ...virtualItems.map((virtualItem) => {
+        ...virtualItems.flatMap((virtualItem) => {
           const entry = filteredEntries[virtualItem.index];
-          const row = document.createElement("div");
 
           if (!entry) {
-            return row;
+            return [];
           }
 
+          const row = document.createElement("div");
           row.className = rowClass;
           row.setAttribute("role", "row");
           row.setAttribute("aria-rowindex", String(virtualItem.index + 2));
@@ -422,9 +527,13 @@ const statusId = `${dataId}-status`;
             createCell(starFormatter.format(entry.stars), starCellClass),
             language,
           );
-          return row;
+
+          renderedRows.push(row);
+          return [row];
         }),
       );
+      virtualizer.measureElement(null);
+      renderedRows.forEach((row) => virtualizer.measureElement(row));
     }
 
     const cleanup = virtualizer._didMount();
@@ -434,9 +543,23 @@ const statusId = `${dataId}-status`;
       applyFilter("");
       filterElement.focus();
     });
-    updateSummary("");
+    updateSummary(restoredFilter);
     render();
-    window.addEventListener("beforeunload", cleanup, { once: true });
+    if (restoredOffset > 0) {
+      virtualizer.scrollToOffset(restoredOffset);
+    }
+    window.addEventListener("pagehide", persistVirtualState);
+    window.addEventListener(
+      "beforeunload",
+      () => {
+        if (renderFrame !== null) {
+          window.cancelAnimationFrame(renderFrame);
+        }
+        persistVirtualState();
+        cleanup();
+      },
+      { once: true },
+    );
   }
 
   document.querySelectorAll<HTMLElement>("[data-virtual-ranking]").forEach(renderVirtualRanking);
