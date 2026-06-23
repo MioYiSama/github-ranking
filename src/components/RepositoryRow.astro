@@ -39,7 +39,7 @@ const popupTopicBadgeClass =
               <span class={moreTopicBadgeClass} title={`${hiddenTopicCount} more topics`} tabindex="0" aria-describedby={topicPopupId}>
                 +{hiddenTopicCount}
               </span>
-              <div id={topicPopupId} class="absolute left-0 top-[calc(100%+0.5rem)] z-[100] hidden max-h-44 w-[min(22rem,72vw)] overflow-auto rounded-lg border border-slate-200 bg-white bg-clip-padding p-3 text-sm leading-snug text-slate-950 opacity-100 shadow-[0_18px_48px_rgb(15_23_42_/_0.22),0_0_0_1px_#fff] peer-hover:block peer-focus:block dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:shadow-[0_18px_48px_rgb(0_0_0_/_0.45),0_0_0_1px_rgb(15_23_42)]" role="tooltip">
+              <div id={topicPopupId} class="topic-popup absolute left-0 top-[calc(100%+0.5rem)] z-[100] hidden max-h-44 w-[min(22rem,72vw)] overflow-auto rounded-lg border border-slate-200 bg-white bg-clip-padding p-3 text-sm leading-snug text-slate-950 opacity-100 shadow-[0_18px_48px_rgb(15_23_42_/_0.22),0_0_0_1px_#fff] peer-hover:block peer-focus:block dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:shadow-[0_18px_48px_rgb(0_0_0_/_0.45),0_0_0_1px_rgb(15_23_42)]" role="tooltip">
                 <strong class="sr-only">Topics</strong>
                 <span class="flex flex-wrap gap-1.5">
                   {hiddenTopics.map((topic) => (

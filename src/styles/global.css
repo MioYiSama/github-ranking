@@ -23,3 +23,9 @@
     line-height: 1.5;
   }
 }
+
+.topic-popup--above,
+tbody tr:last-child .topic-popup {
+  top: auto;
+  bottom: calc(100% + 0.5rem);
+}

@@ -6,7 +6,7 @@ let built = false;
 
 export function ensureBuiltSite() {
   if (!built) {
-    execFileSync("pnpm", ["build:static"], {
+    execFileSync("pnpm", ["exec", "astro", "build"], {
       cwd: resolve("."),
       env: {
         ...process.env,
