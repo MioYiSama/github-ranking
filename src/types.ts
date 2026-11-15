@@ -1,3 +1,8 @@
+/** Shape of `rankings/index.json`: every `rankings/<date>.json` that exists, newest first. */
+export interface RankingIndex {
+  dates: string[];
+}
+
 /** Shape of `rankings/<date>.json`, written by scripts/fetch.ts. */
 export interface Ranking {
   date: string;

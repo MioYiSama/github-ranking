@@ -1,7 +1,7 @@
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, readdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { setTimeout } from "node:timers/promises";
-import type { Ranking } from "../src/types.ts";
+import type { Ranking, RankingIndex } from "../src/types.ts";
 
 const API = "https://api.github.com/search/repositories";
 const PER_PAGE = 100;
@@ -141,3 +141,14 @@ await mkdir(OUT_DIR, { recursive: true });
 const file = join(OUT_DIR, `${date}.json`);
 await writeFile(file, JSON.stringify(output, null, 2) + "\n");
 console.log(`wrote ${repos.length} repositories to ${file}`);
+
+// Rebuilt from the directory listing, so it also picks up files added or removed by hand.
+const index: RankingIndex = {
+  dates: (await readdir(OUT_DIR))
+    .filter((name) => /^\d{4}-\d{2}-\d{2}\.json$/.test(name))
+    .map((name) => name.slice(0, 10))
+    .sort()
+    .reverse(),
+};
+await writeFile(join(OUT_DIR, "index.json"), JSON.stringify(index, null, 2) + "\n");
+console.log(`indexed ${index.dates.length} rankings`);

@@ -1,56 +1,32 @@
 <script lang="ts">
   import { createWindowVirtualizer } from "@tanstack/svelte-virtual";
-  import Fuse from "fuse.js";
   import { untrack } from "svelte";
-  import { loadLatestRanking, loadPreviousRanking } from "./rankings.ts";
+  import DatePicker from "./DatePicker.svelte";
+  import { defaultBase, loadIndex, loadRanking } from "./rankings.ts";
+  import { buildSearchIndex, searchRepos } from "./search.ts";
   import type { Ranking } from "./types.ts";
 
   const ROW_HEIGHT = 88;
   const fmt = new Intl.NumberFormat("en-US");
   const diffFmt = new Intl.NumberFormat("en-US", { signDisplay: "exceptZero" });
 
-  let ranking = $state<Ranking | null>(null);
+  /** Dates with a ranking file, newest first (rankings/index.json). */
+  let dates = $state.raw<string[]>([]);
+  /** What the user asked for: the day to show, and the day its star diff is measured from. */
+  let view = $state.raw<{ date: string; base: string | null } | null>(null);
+  /** What is on screen; replaced only once both files of a new view have arrived. */
+  let ranking = $state.raw<Ranking | null>(null);
+  /** Stars per repo id on the base day; null when there is no base. */
+  let baseStars = $state.raw<Map<number, number> | null>(null);
   let error = $state<string | null>(null);
   let query = $state("");
   let list = $state<HTMLElement>();
   let listTop = $state(0);
-  /** Stars per repo id on the previous day; null until loaded or when that day is missing. */
-  let prevStars = $state.raw<Map<number, number> | null>(null);
 
   const repos = $derived(ranking?.repositories ?? []);
-  const fuse = $derived(
-    new Fuse(repos, {
-      keys: [
-        { name: "name", weight: 4, getFn: (r) => r.full_name.slice(r.owner.length + 1) },
-        { name: "owner", weight: 2 },
-        { name: "topics", weight: 2 },
-        { name: "language", weight: 1 },
-        { name: "description", weight: 1 },
-      ],
-      threshold: 0.3,
-      // Descriptions are long; a match anywhere in them counts.
-      ignoreLocation: true,
-      includeScore: true,
-      includeMatches: true,
-    }),
-  );
-
-  // Exact hits in any field all score ~0, so Fuse alone can't tell a name hit from a
-  // description hit. Order by where it matched, then how well (in 0.05 steps), then stars.
-  const FIELD_TIER: Record<string, number> = { name: 0, owner: 1, topics: 1 };
-  const filtered = $derived.by(() => {
-    const q = query.trim();
-    if (!q) return repos;
-    return fuse
-      .search(q)
-      .map((r) => ({
-        repo: r.item,
-        tier: Math.min(...(r.matches ?? []).map((m) => FIELD_TIER[m.key ?? ""] ?? 2)),
-        score: Math.round((r.score ?? 1) * 20),
-      }))
-      .sort((a, b) => a.tier - b.tier || a.score - b.score || a.repo.rank - b.repo.rank)
-      .map((r) => r.repo);
-  });
+  const searchIndex = $derived(buildSearchIndex(repos));
+  // The index is in rank order, so search results stay sorted by stars.
+  const filtered = $derived(query.trim() ? searchRepos(searchIndex, query) : repos);
 
   const virtualizer = createWindowVirtualizer<HTMLDivElement>({
     count: 0,
@@ -58,23 +34,44 @@
     overscan: 12,
   });
 
-  async function load() {
+  function message(e: unknown): string {
+    return e instanceof Error ? e.message : String(e);
+  }
+
+  async function init() {
     error = null;
     try {
-      ranking = await loadLatestRanking();
+      dates = await loadIndex();
     } catch (e) {
-      error = e instanceof Error ? e.message : String(e);
+      error = message(e);
       return;
     }
-    // The diff is extra: the list renders without waiting for it, and a failed load just omits it.
-    loadPreviousRanking(ranking).then(
-      (prev) => {
-        if (prev) prevStars = new Map(prev.repositories.map((r) => [r.id, r.stars]));
-      },
-      (e) => console.warn("previous ranking unavailable:", e),
-    );
+    select(dates[0], defaultBase(dates, dates[0]));
   }
-  load();
+  init();
+
+  async function select(date: string, base: string | null) {
+    const current = { date, base };
+    view = current;
+    error = null;
+    try {
+      const [next, baseRanking] = await Promise.all([
+        loadRanking(date),
+        base ? loadRanking(base) : null,
+      ]);
+      // A later pick may have finished first; only the latest one renders.
+      if (view !== current) return;
+      ranking = next;
+      baseStars = baseRanking && new Map(baseRanking.repositories.map((r) => [r.id, r.stars]));
+    } catch (e) {
+      if (view === current) error = message(e);
+    }
+  }
+
+  function retry() {
+    if (view) select(view.date, view.base);
+    else init();
+  }
 
   // The list starts below the header; the virtualizer needs that offset in page coordinates.
   $effect(() => {
@@ -112,8 +109,8 @@
       }}
       disabled={!ranking}
     />
-    {#if ranking}
-      <time datetime={ranking.date}>{ranking.date}</time>
+    {#if view}
+      <DatePicker {dates} date={view.date} base={view.base} onselect={select} />
     {/if}
   </div>
 </header>
@@ -122,7 +119,7 @@
   {#if error}
     <div class="message">
       <span>Couldn't load the ranking. {error}</span>
-      <button type="button" onclick={load}>Retry</button>
+      <button type="button" onclick={retry}>Retry</button>
     </div>
   {:else if !ranking}
     <div class="sheet" aria-busy="true">
@@ -141,7 +138,7 @@
   {:else if filtered.length === 0}
     <div class="message">No repositories match “{query.trim()}”.</div>
   {:else}
-    <ol class="sheet" class:with-diff={prevStars} style:height="{$virtualizer.getTotalSize()}px">
+    <ol class="sheet" class:with-diff={baseStars} style:height="{$virtualizer.getTotalSize()}px">
       {#each $virtualizer.getVirtualItems() as item (item.key)}
         {@const repo = filtered[item.index]}
         {@const name = repo.full_name.slice(repo.owner.length + 1)}
@@ -175,8 +172,8 @@
             </span>
             <span class="lang">{repo.language ?? "—"}</span>
             <span class="stars">{fmt.format(repo.stars)}</span>
-            {#if prevStars}
-              {@const prev = prevStars.get(repo.id)}
+            {#if baseStars}
+              {@const prev = baseStars.get(repo.id)}
               {#if prev === undefined}
                 <span class="diff">new</span>
               {:else}

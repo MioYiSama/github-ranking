@@ -81,10 +81,118 @@ h1 {
   border-color: var(--text);
 }
 
-time {
-  color: var(--muted);
+/* Date picker ---------------------------------------------------------------- */
+
+.picker {
+  position: relative;
+}
+
+.picker-trigger {
+  height: 36px;
+  padding: 0 12px;
+  font: inherit;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--control);
+  border-radius: var(--radius-control);
+  cursor: pointer;
+}
+
+.picker-trigger:hover,
+.picker-trigger[aria-expanded="true"] {
+  border-color: var(--text);
+}
+
+/* Floats over the list, so it is the one thing with a shadow. */
+.calendar {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 2;
+  width: 284px;
+  padding: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.08);
+}
+
+.calendar-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.calendar-head button {
+  width: 32px;
+  height: 32px;
+  font: inherit;
+  font-size: 18px;
+  color: var(--text);
+  background: none;
+  border: 0;
+  border-radius: var(--radius-control);
+  cursor: pointer;
+}
+
+.calendar-head button:hover:not(:disabled) {
+  background: var(--raised);
+}
+
+.calendar-head button:disabled {
+  color: #a3a8ae;
+  cursor: default;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.weekday {
+  height: 28px;
+  font-size: 12px;
+  line-height: 28px;
+  text-align: center;
+  color: var(--muted);
+}
+
+.day {
+  height: 36px;
+  padding: 0;
+  font: inherit;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+  background: none;
+  border: 0;
+  border-radius: var(--radius-control);
+  cursor: pointer;
+}
+
+.day:hover:not(:disabled) {
+  background: var(--raised);
+}
+
+.day:disabled {
+  font-weight: 400;
+  color: #a3a8ae;
+  cursor: default;
+}
+
+.day.between {
+  background: var(--raised);
+}
+
+.day.edge,
+.day.edge:hover {
+  color: var(--surface);
+  background: var(--text);
 }
 
 /* List -------------------------------------------------------------------- */
@@ -293,13 +401,16 @@ a.row:focus-visible {
     padding: 16px var(--pad) 12px;
   }
 
-  time {
-    margin-left: auto;
+  /* Title on its own row; search and date share the second. */
+  h1 {
+    flex-basis: 100%;
   }
 
   .search {
-    order: 1;
-    width: 100%;
+    flex: 1;
+    width: auto;
+    min-width: 0;
+    margin-left: 0;
   }
 
   .sheet {
