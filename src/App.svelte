@@ -2,20 +2,22 @@
   import { createWindowVirtualizer } from "@tanstack/svelte-virtual";
   import Fuse from "fuse.js";
   import { untrack } from "svelte";
-  import { loadLatestRanking } from "./rankings.ts";
+  import { loadLatestRanking, loadPreviousRanking } from "./rankings.ts";
   import type { Ranking } from "./types.ts";
 
   const ROW_HEIGHT = 88;
   const fmt = new Intl.NumberFormat("en-US");
+  const diffFmt = new Intl.NumberFormat("en-US", { signDisplay: "exceptZero" });
 
   let ranking = $state<Ranking | null>(null);
   let error = $state<string | null>(null);
   let query = $state("");
   let list = $state<HTMLElement>();
   let listTop = $state(0);
+  /** Stars per repo id on the previous day; null until loaded or when that day is missing. */
+  let prevStars = $state.raw<Map<number, number> | null>(null);
 
   const repos = $derived(ranking?.repositories ?? []);
-  const maxStars = $derived(repos[0]?.stars ?? 1);
   const fuse = $derived(
     new Fuse(repos, {
       keys: [
@@ -62,7 +64,15 @@
       ranking = await loadLatestRanking();
     } catch (e) {
       error = e instanceof Error ? e.message : String(e);
+      return;
     }
+    // The diff is extra: the list renders without waiting for it, and a failed load just omits it.
+    loadPreviousRanking(ranking).then(
+      (prev) => {
+        if (prev) prevStars = new Map(prev.repositories.map((r) => [r.id, r.stars]));
+      },
+      (e) => console.warn("previous ranking unavailable:", e),
+    );
   }
   load();
 
@@ -131,7 +141,7 @@
   {:else if filtered.length === 0}
     <div class="message">No repositories match “{query.trim()}”.</div>
   {:else}
-    <ol class="sheet" style:height="{$virtualizer.getTotalSize()}px">
+    <ol class="sheet" class:with-diff={prevStars} style:height="{$virtualizer.getTotalSize()}px">
       {#each $virtualizer.getVirtualItems() as item (item.key)}
         {@const repo = filtered[item.index]}
         {@const name = repo.full_name.slice(repo.owner.length + 1)}
@@ -164,12 +174,17 @@
               {/if}
             </span>
             <span class="lang">{repo.language ?? "—"}</span>
-            <span class="stars">
-              {fmt.format(repo.stars)}
-              <span class="bar-track"
-                ><span class="bar-fill" style:width="{(repo.stars / maxStars) * 100}%"></span></span
-              >
-            </span>
+            <span class="stars">{fmt.format(repo.stars)}</span>
+            {#if prevStars}
+              {@const prev = prevStars.get(repo.id)}
+              {#if prev === undefined}
+                <span class="diff">new</span>
+              {:else}
+                <span class="diff" class:up={repo.stars > prev} class:down={repo.stars < prev}
+                  >{diffFmt.format(repo.stars - prev)}</span
+                >
+              {/if}
+            {/if}
           </a>
         </li>
       {/each}
