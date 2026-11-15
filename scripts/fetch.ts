@@ -1,6 +1,7 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { setTimeout } from "node:timers/promises";
+import type { Ranking } from "../src/types.ts";
 
 const API = "https://api.github.com/search/repositories";
 const PER_PAGE = 100;
@@ -80,7 +81,9 @@ async function fetchPage(page: number): Promise<SearchResponse> {
     // Secondary limit: honour retry-after, otherwise back off exponentially
     // starting at one minute, as GitHub recommends.
     const waitMs = retryAfter ? Number(retryAfter) * 1000 : 60_000 * 2 ** (attempt - 1);
-    console.warn(`page ${page}: secondary rate limit hit, retrying in ${Math.ceil(waitMs / 1000)}s`);
+    console.warn(
+      `page ${page}: secondary rate limit hit, retrying in ${Math.ceil(waitMs / 1000)}s`,
+    );
     await setTimeout(waitMs);
   }
 }
@@ -110,7 +113,7 @@ repos.sort((a, b) => b.stargazers_count - a.stargazers_count);
 
 const now = new Date();
 const date = now.toISOString().slice(0, 10); // UTC, YYYY-MM-DD
-const output = {
+const output: Ranking = {
   date,
   fetched_at: now.toISOString(),
   count: repos.length,

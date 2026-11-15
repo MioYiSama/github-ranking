@@ -1,0 +1,318 @@
+:root {
+  --ground: #f2f4f7;
+  --surface: #ffffff;
+  --raised: #eceef1;
+  --border: #e3e6ea;
+  --rule: #eff1f4;
+  --control: #d1d5db;
+  --text: #0a0a0a;
+  --muted: #5f6368;
+  --hue: #1d5fbf;
+  --radius-card: 8px;
+  --radius-control: 6px;
+  --pad: 24px;
+  --gap: 16px;
+  --width: 1040px;
+
+  font-family: "Geist", Inter, system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--text);
+  background: var(--ground);
+  -webkit-font-smoothing: antialiased;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+/* Header ----------------------------------------------------------------- */
+
+.bar {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--ground);
+}
+
+.bar-inner {
+  display: flex;
+  align-items: center;
+  gap: var(--gap);
+  max-width: var(--width);
+  margin: 0 auto;
+  padding: 20px var(--pad);
+}
+
+h1 {
+  margin: 0;
+  font-size: 20px;
+  line-height: 28px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.search {
+  width: 280px;
+  height: 36px;
+  margin-left: auto;
+  padding: 0 12px;
+  font: inherit;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--control);
+  border-radius: var(--radius-control);
+  outline: none;
+}
+
+.search::placeholder {
+  color: #6b6b6b;
+}
+
+.search:focus-visible {
+  border-color: var(--text);
+}
+
+time {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* List -------------------------------------------------------------------- */
+
+main {
+  max-width: var(--width);
+  margin: 0 auto;
+  padding: 0 var(--pad) 48px;
+}
+
+.sheet {
+  position: relative;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+}
+
+.slot {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+}
+
+/* Columns: rank · avatar · name/description · language · stars */
+.row {
+  display: grid;
+  grid-template-columns: 40px 32px minmax(0, 1fr) 120px 112px;
+  align-items: center;
+  column-gap: var(--gap);
+  height: 100%;
+  padding: 0 20px 0 12px;
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px solid var(--rule);
+}
+
+a.row:hover {
+  background: #f8f9fb;
+}
+
+a.row:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: -2px;
+}
+
+.rank {
+  text-align: right;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--raised);
+}
+
+.name {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.full-name,
+.desc {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.full-name {
+  font-weight: 500;
+}
+
+.owner,
+.desc,
+.lang {
+  color: var(--muted);
+}
+
+.owner {
+  font-weight: 400;
+}
+
+.desc {
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.lang-inline {
+  display: none;
+}
+
+/* One line of whole chips: the ones that don't fit wrap out of the clipped box. */
+.topics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  height: 20px;
+  margin-top: 4px;
+  overflow: hidden;
+}
+
+.topic {
+  flex: none;
+  padding: 0 6px;
+  font-size: 12px;
+  line-height: 20px;
+  white-space: nowrap;
+  color: #3d4249;
+  background: var(--raised);
+  border-radius: 4px;
+}
+
+.lang {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.stars {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.bar-track {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+  height: 2px;
+}
+
+.bar-fill {
+  background: var(--hue);
+}
+
+/* States ------------------------------------------------------------------ */
+
+.skeleton i {
+  display: block;
+  height: 12px;
+  border-radius: 3px;
+  background: var(--raised);
+}
+
+.skeleton .rank i,
+.skeleton .stars i {
+  margin-left: auto;
+}
+
+.skeleton .name {
+  gap: 8px;
+}
+
+.message {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px;
+  color: var(--muted);
+  background: var(--surface);
+  border: 1px dashed var(--control);
+  border-radius: var(--radius-card);
+}
+
+.message button {
+  padding: 0;
+  font: inherit;
+  font-weight: 500;
+  color: var(--text);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+/* Phone: the language column folds into the description line. -------------- */
+
+@media (max-width: 720px) {
+  :root {
+    --pad: 16px;
+    --gap: 12px;
+  }
+
+  .bar-inner {
+    flex-wrap: wrap;
+    row-gap: 12px;
+    padding: 16px var(--pad) 12px;
+  }
+
+  time {
+    margin-left: auto;
+  }
+
+  .search {
+    order: 1;
+    width: 100%;
+  }
+
+  .sheet {
+    margin: 0 calc(var(--pad) * -1);
+    border-radius: 0;
+    border-width: 1px 0;
+  }
+
+  .row {
+    grid-template-columns: 28px 32px minmax(0, 1fr) auto;
+    padding: 0 var(--pad) 0 8px;
+  }
+
+  .lang {
+    display: none;
+  }
+
+  .lang-inline {
+    display: inline;
+  }
+
+  .stars {
+    min-width: 64px;
+  }
+}
