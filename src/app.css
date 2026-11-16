@@ -81,6 +81,49 @@ h1 {
   border-color: var(--text);
 }
 
+.sort {
+  height: 36px;
+  padding: 0 32px 0 12px;
+  font: inherit;
+  color: var(--text);
+  background: var(--surface)
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%235f6368' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+    no-repeat right 12px center;
+  border: 1px solid var(--control);
+  border-radius: var(--radius-control);
+  outline: none;
+  appearance: none;
+  cursor: pointer;
+}
+
+.sort:hover:not(:disabled),
+.sort:focus-visible {
+  border-color: var(--text);
+}
+
+.sort:disabled {
+  color: #a3a8ae;
+  cursor: default;
+}
+
+.github {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 36px;
+  height: 36px;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--control);
+  border-radius: var(--radius-control);
+}
+
+.github:hover,
+.github:focus-visible {
+  border-color: var(--text);
+  outline: none;
+}
+
 /* Date picker ---------------------------------------------------------------- */
 
 .picker {
@@ -395,22 +438,39 @@ a.row:focus-visible {
     --gap: 12px;
   }
 
+  /* Title and GitHub link on the first row; search, date and sort share the second. */
   .bar-inner {
-    flex-wrap: wrap;
-    row-gap: 12px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    grid-template-areas:
+      "title title github"
+      "search date sort";
+    gap: 12px;
     padding: 16px var(--pad) 12px;
   }
 
-  /* Title on its own row; search and date share the second. */
   h1 {
-    flex-basis: 100%;
+    grid-area: title;
   }
 
   .search {
-    flex: 1;
+    grid-area: search;
     width: auto;
     min-width: 0;
     margin-left: 0;
+  }
+
+  .picker {
+    grid-area: date;
+  }
+
+  .sort {
+    grid-area: sort;
+  }
+
+  .github {
+    grid-area: github;
+    justify-self: end;
   }
 
   .sheet {
