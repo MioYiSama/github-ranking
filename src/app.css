@@ -7,8 +7,13 @@
   --control: #d1d5db;
   --text: #0a0a0a;
   --muted: #5f6368;
+  --placeholder: #6b6b6b;
+  --disabled: #a3a8ae;
+  --topic-text: #3d4249;
+  --row-hover: #f8f9fb;
   --positive: #247b50;
   --negative: #c4242a;
+  --calendar-shadow: 0 8px 24px rgb(0 0 0 / 0.08);
   --radius-card: 8px;
   --radius-control: 6px;
   --pad: 24px;
@@ -21,6 +26,27 @@
   color: var(--text);
   background: var(--ground);
   -webkit-font-smoothing: antialiased;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --ground: #0d1117;
+    --surface: #161b22;
+    --raised: #21262d;
+    --border: #30363d;
+    --rule: #21262d;
+    --control: #484f58;
+    --text: #e6edf3;
+    --muted: #9da7b3;
+    --placeholder: #9da7b3;
+    --disabled: #6e7681;
+    --topic-text: #b1bac4;
+    --row-hover: #1c2128;
+    --positive: #7ee787;
+    --negative: #ff7b72;
+    --calendar-shadow: 0 8px 24px rgb(0 0 0 / 0.4);
+  }
 }
 
 *,
@@ -74,7 +100,7 @@ h1 {
 }
 
 .search::placeholder {
-  color: #6b6b6b;
+  color: var(--placeholder);
 }
 
 .search:focus-visible {
@@ -87,7 +113,7 @@ h1 {
   font: inherit;
   color: var(--text);
   background: var(--surface)
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%235f6368' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cstyle%3E@media(prefers-color-scheme:dark){path{stroke:%239da7b3}}%3C/style%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%235f6368' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
     no-repeat right 12px center;
   border: 1px solid var(--control);
   border-radius: var(--radius-control);
@@ -102,7 +128,7 @@ h1 {
 }
 
 .sort:disabled {
-  color: #a3a8ae;
+  color: var(--disabled);
   cursor: default;
 }
 
@@ -159,7 +185,7 @@ h1 {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-card);
-  box-shadow: 0 8px 24px rgb(0 0 0 / 0.08);
+  box-shadow: var(--calendar-shadow);
 }
 
 .calendar-head {
@@ -187,7 +213,7 @@ h1 {
 }
 
 .calendar-head button:disabled {
-  color: #a3a8ae;
+  color: var(--disabled);
   cursor: default;
 }
 
@@ -224,7 +250,7 @@ h1 {
 
 .day:disabled {
   font-weight: 400;
-  color: #a3a8ae;
+  color: var(--disabled);
   cursor: default;
 }
 
@@ -282,7 +308,7 @@ main {
 }
 
 a.row:hover {
-  background: #f8f9fb;
+  background: var(--row-hover);
 }
 
 a.row:focus-visible {
@@ -356,7 +382,7 @@ a.row:focus-visible {
   font-size: 12px;
   line-height: 20px;
   white-space: nowrap;
-  color: #3d4249;
+  color: var(--topic-text);
   background: var(--raised);
   border-radius: 4px;
 }
